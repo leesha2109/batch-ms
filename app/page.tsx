@@ -1,63 +1,116 @@
-import Image from "next/image";
+"use client";
+
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div
+      className="flex flex-col items-center justify-center min-h-screen"
+      style={{
+        background: "linear-gradient(160deg, #001D39 0%, #0A4174 50%, #7BBDE8 85%, #BDD8E9 100%)",
+      }}
+    >
+      <main className="flex flex-col items-center justify-center gap-4 text-center px-8">
+        {/* Glass Frame Container */}
+        <div
+          style={{
+            background: "rgba(255, 255, 255, 0.08)",
+            backdropFilter: "blur(10px)",
+            border: "2px solid rgba(255, 255, 255, 0.15)",
+            borderRadius: "24px",
+            padding: "60px 50px",
+            maxWidth: "500px",
+            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+          }}
+        >
+
+        {/* Icon */}
+        <div
+          style={{
+            width: "100px",
+            height: "100px",
+            borderRadius: "24px",
+            background: "#FFE566",
+            border: "3px solid rgba(255,255,255,0.6)",
+            boxShadow: "0 0 0 6px rgba(255,229,102,0.2)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: "16px",
+            margin: "0 auto 20px",
+          }}
+        >
+          {/* Replace with your preferred icon */}
+          <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24"
+            fill="none" stroke="#001D39" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Logo pill */}
+        <div
+          style={{
+            fontSize: "36px",
+            fontWeight: 500,
+            color: "#fff",
+            background: "rgba(189,216,233,0.15)",
+            border: "1px solid rgba(255,229,102,0.45)",
+            borderRadius: "10px",
+            padding: "6px 24px",
+            letterSpacing: "0.5px",
+          }}
+        >
+          Batch<span style={{ color: "#FFE566" }}>MS</span>
+        </div>
+
+        {/* Heading */}
+        <h1 className="text-3xl font-bold text-white mt-4">
+          Welcome to BatchMS
+        </h1>
+
+        {/* Subtitle */}
+        <p style={{ color: "rgba(255,255,255,0.85)", maxWidth: "340px", lineHeight: 1.8, fontSize: "17px" }}>
+          A comprehensive Special Batch management system for University Of Ruhuna.
+    
+        </p>
+        <p style={{ color: "rgba(255,255,255,0.85)", maxWidth: "340px", lineHeight: 1.8, fontSize: "14px" }}>
+          Department Of Computer Science.
+        </p>
+
+
+        {/* Login Button */}
+        <button
+          onClick={() => router.push("/login")}
+          style={{
+            marginTop: "24px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "14px 40px",
+            borderRadius: "10px",
+            background: "#FFE566",
+            border: "none",
+            color: "#001D39",
+            fontSize: "16px",
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "all 0.3s",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = "#FFD633", e.currentTarget.style.transform = "translateY(-2px)")}
+          onMouseLeave={e => (e.currentTarget.style.background = "#FFE566", e.currentTarget.style.transform = "translateY(0)")}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+            fill="none" stroke="#001D39" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Login
+        </button>
+
         </div>
       </main>
     </div>
