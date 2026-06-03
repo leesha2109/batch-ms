@@ -1,16 +1,19 @@
-import { getServerSession } from 'next-auth'
-import TopHeader from '@/components/TopHeader'
-import StatCard from '@/components/StatCard'
-import connectDB from '@/lib/mongoose'
-import User from '@/models/User'
+import { getServerSession } from "next-auth";
+import authOptions from "@/lib/authOptions";
+import TopHeader from "@/components/TopHeader";
+import StatCard from "@/components/StatCard";
+import connectDB from "@/lib/mongoose";
+import User from "@/models/User";
 
 export default async function HodDashboard() {
-  const session = await getServerSession()
+  const session = await getServerSession(authOptions);
 
-  await connectDB()
-  const totalStudents  = await User.countDocuments({ role: 'student' })
-  const totalLecturers = await User.countDocuments({ role: 'lecturer' })
-  const totalVisiting  = await User.countDocuments({ role: 'visiting_lecturer' })
+  await connectDB();
+  const totalStudents = await User.countDocuments({ role: "student" });
+  const totalLecturers = await User.countDocuments({ role: "lecturer" });
+  const totalVisiting = await User.countDocuments({
+    role: "visiting_lecturer",
+  });
 
   return (
     <div>
@@ -20,7 +23,6 @@ export default async function HodDashboard() {
       />
 
       <div className="px-8 py-6">
-
         {/* Stat cards */}
         <div className="grid grid-cols-4 gap-4 mb-8">
           <StatCard
@@ -64,13 +66,10 @@ export default async function HodDashboard() {
             <h2 className="text-sm font-semibold text-gray-700 mb-4">
               Recent Activity
             </h2>
-            <p className="text-sm text-gray-400">
-              No recent activity yet.
-            </p>
+            <p className="text-sm text-gray-400">No recent activity yet.</p>
           </div>
         </div>
-
       </div>
     </div>
-  )
+  );
 }

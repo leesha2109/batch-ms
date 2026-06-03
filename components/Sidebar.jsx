@@ -7,6 +7,7 @@ import { signOut, useSession } from 'next-auth/react'
 const hodLinks = [
   { label: 'Dashboard',   href: '/dashboard/hod',                icon: '🏠' },
   { label: 'Batches',     href: '/dashboard/hod/batches',        icon: '🎓' },
+  { label: 'Users',      href: '/dashboard/hod/users',    icon: '👥' },
   { label: 'Subjects',    href: '/dashboard/hod/subjects',       icon: '📚' },
   { label: 'Marks',       href: '/dashboard/hod/marks',          icon: '📝' },
   { label: 'Projects',    href: '/dashboard/hod/projects',       icon: '🔬' },
@@ -94,6 +95,8 @@ export default function Sidebar() {
           Sign out
         </button>
       </div>
+
+  
 
     </aside>
   )
