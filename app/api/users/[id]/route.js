@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 export async function PATCH(req, { params }) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "hod") {
+    if (!session || !["hod", "coordinator"].includes(session.user.role)) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 },
@@ -54,7 +54,7 @@ export async function PATCH(req, { params }) {
 export async function DELETE(req, { params }) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "hod") {
+    if (!session || !["hod", "coordinator"].includes(session.user.role)) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 },
