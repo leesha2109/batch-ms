@@ -18,6 +18,8 @@ export async function PATCH(req, { params }) {
 
     await connectDB();
 
+    const resolvedParams = await params;
+
     const body = await req.json();
     const { name, email, role, batchId, isActive, password } = body;
 
@@ -28,7 +30,7 @@ export async function PATCH(req, { params }) {
       updateData.password = await bcrypt.hash(password, 10);
     }
 
-    const user = await User.findByIdAndUpdate(params.id, updateData, {
+    const user = await User.findByIdAndUpdate(resolvedParams.id, updateData, {
       new: true,
     }).select("-password");
 
@@ -61,9 +63,11 @@ export async function DELETE(req, { params }) {
 
     await connectDB();
 
+    const resolvedParams = await params;
+
     // soft delete — just mark as inactive
     const user = await User.findByIdAndUpdate(
-      params.id,
+      resolvedParams.id,
       { isActive: false },
       { new: true },
     ).select("-password");
