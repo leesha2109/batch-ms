@@ -181,7 +181,7 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign in"}
           </button>
 
-          {/* Request Access Link */}
+          
           <div style={{ textAlign: 'center', marginTop: '16px' }}>
             <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255, 255, 255, 0.7)' }}>
               Don't have access?{' '}
