@@ -8,10 +8,8 @@ export default function RequestAccessPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
     role: 'student',
-    institution: '',
-    reason: ''
+    studentNumber: ''
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -39,7 +37,7 @@ export default function RequestAccessPage() {
 
       if (response.ok) {
         setSuccess(true)
-        setFormData({ name: '', email: '', phone: '', role: 'student', institution: '', reason: '' })
+        setFormData({ name: '', email: '', role: 'student', studentNumber: '' })
         setTimeout(() => {
           router.push('/login')
         }, 2000)
@@ -180,36 +178,7 @@ export default function RequestAccessPage() {
           </div>
 
           {/* Phone */}
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{
-              fontSize: '13px',
-              color: 'rgba(255, 255, 255, 0.8)',
-              display: 'block',
-              marginBottom: '6px',
-              fontWeight: '500'
-            }}>
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-              style={{
-                width: '100%',
-                padding: '11px 12px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '8px',
-                fontSize: '14px',
-                outline: 'none',
-                background: 'rgba(255, 255, 255, 0.08)',
-                color: '#fff',
-                boxSizing: 'border-box'
-              }}
-              placeholder="+1 (555) 000-0000"
-            />
-          </div>
+          {/* Removed */}
 
           {/* Role */}
           <div style={{ marginBottom: '16px' }}>
@@ -241,76 +210,49 @@ export default function RequestAccessPage() {
             >
               <option value="student" style={{ background: '#001D39' }}>Student</option>
               <option value="lecturer" style={{ background: '#001D39' }}>Lecturer</option>
-              <option value="hod" style={{ background: '#001D39' }}>HOD</option>
-              <option value="coordinator" style={{ background: '#001D39' }}>Coordinator</option>
+              
             </select>
           </div>
 
+          {/* Student Number - Conditional */}
+          {formData.role === 'student' && (
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{
+                fontSize: '13px',
+                color: 'rgba(255, 255, 255, 0.8)',
+                display: 'block',
+                marginBottom: '6px',
+                fontWeight: '500'
+              }}>
+                Student Number
+              </label>
+              <input
+                type="text"
+                name="studentNumber"
+                value={formData.studentNumber}
+                onChange={handleChange}
+                required={formData.role === 'student'}
+                style={{
+                  width: '100%',
+                  padding: '11px 12px',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  outline: 'none',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  color: '#fff',
+                  boxSizing: 'border-box'
+                }}
+                placeholder="SC/20XX/XXXXX"
+              />
+            </div>
+          )}
+
           {/* Institution */}
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{
-              fontSize: '13px',
-              color: 'rgba(255, 255, 255, 0.8)',
-              display: 'block',
-              marginBottom: '6px',
-              fontWeight: '500'
-            }}>
-              Institution
-            </label>
-            <input
-              type="text"
-              name="institution"
-              value={formData.institution}
-              onChange={handleChange}
-              required
-              style={{
-                width: '100%',
-                padding: '11px 12px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '8px',
-                fontSize: '14px',
-                outline: 'none',
-                background: 'rgba(255, 255, 255, 0.08)',
-                color: '#fff',
-                boxSizing: 'border-box'
-              }}
-              placeholder="Your Institution Name"
-            />
-          </div>
+          {/* Removed */}
 
           {/* Reason */}
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{
-              fontSize: '13px',
-              color: 'rgba(255, 255, 255, 0.8)',
-              display: 'block',
-              marginBottom: '6px',
-              fontWeight: '500'
-            }}>
-              Reason for Access
-            </label>
-            <textarea
-              name="reason"
-              value={formData.reason}
-              onChange={handleChange}
-              required
-              style={{
-                width: '100%',
-                padding: '11px 12px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '8px',
-                fontSize: '14px',
-                outline: 'none',
-                background: 'rgba(255, 255, 255, 0.08)',
-                color: '#fff',
-                boxSizing: 'border-box',
-                minHeight: '80px',
-                fontFamily: 'inherit',
-                resize: 'vertical'
-              }}
-              placeholder="Please explain why you need access..."
-            />
-          </div>
+          {/* Removed */}
 
           {error && (
             <div style={{
@@ -319,7 +261,7 @@ export default function RequestAccessPage() {
               padding: '11px 12px',
               borderRadius: '8px',
               fontSize: '13px',
-              marginBottom: '16px',
+              marginBottom: '24px',
               border: '1px solid rgba(192, 57, 43, 0.4)'
             }}>
               {error}
