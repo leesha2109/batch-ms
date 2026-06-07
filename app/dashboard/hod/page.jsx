@@ -4,6 +4,8 @@ import TopHeader from "@/components/TopHeader";
 import StatCard from "@/components/StatCard";
 import connectDB from "@/lib/mongoose";
 import User from "@/models/User";
+import AccessRequest from "@/models/AccessRequest";
+import PendingRequestsPanel from "@/components/PendingRequestsPanel";
 
 export default async function HodDashboard() {
   const session = await getServerSession(authOptions);
@@ -14,6 +16,10 @@ export default async function HodDashboard() {
   const totalVisiting = await User.countDocuments({
     role: "visiting_lecturer",
   });
+
+  const pendingRequests = await AccessRequest.find({ status: "pending" })
+    .sort({ createdAt: -1 })
+    .lean();
 
   return (
     <div>
@@ -39,8 +45,8 @@ export default async function HodDashboard() {
           />
           <StatCard
             label="Pending Approvals"
-            value="0"
-            sub="Marks & payments"
+            value={pendingRequests.length}
+            sub="Access requests"
             color="red"
           />
           <StatCard
@@ -51,16 +57,11 @@ export default async function HodDashboard() {
           />
         </div>
 
-        {/* Placeholder panels */}
+        {/* Panels */}
         <div className="grid grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl border border-gray-100 p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-4">
-              Pending Approvals
-            </h2>
-            <p className="text-sm text-gray-400">
-              No pending approvals right now.
-            </p>
-          </div>
+          <PendingRequestsPanel
+            requests={JSON.parse(JSON.stringify(pendingRequests))}
+          />
 
           <div className="bg-white rounded-xl border border-gray-100 p-5">
             <h2 className="text-sm font-semibold text-gray-700 mb-4">
