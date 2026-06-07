@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUsers } from "@/hooks/useUsers";
 import UserModal from "@/components/UserModal";
 import TopHeader from "@/components/TopHeader";
@@ -35,10 +35,22 @@ export default function UsersPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [requestId, setRequestId] = useState(null);
 
   const { users, loading, error, refetch } = useUsers(activeTab);
 
-  // filter by search on client side
+  // Auto-open modal if coming from pending request
+  useEffect(() => {
+    const stored = localStorage.getItem("pendingRequest");
+    if (stored) {
+      const { name, email, role, studentNumber, requestId } = JSON.parse(stored);
+      setEditingUser({ name, email, role, studentNumber: studentNumber || "" });
+      setRequestId(requestId);
+      setShowModal(true);
+      localStorage.removeItem("pendingRequest");
+    }
+  }, []);
+
   const filtered = users.filter(
     (u) =>
       u.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -47,12 +59,28 @@ export default function UsersPage() {
 
   function handleEdit(user) {
     setEditingUser(user);
+    setRequestId(null);
     setShowModal(true);
   }
 
   function handleAddNew() {
     setEditingUser(null);
+    setRequestId(null);
     setShowModal(true);
+  }
+
+  async function handleModalSaved() {
+    if (requestId) {
+      await fetch(`/api/request-access/${requestId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "approved" }),
+      });
+      setRequestId(null);
+    }
+    refetch();
+    setShowModal(false);
+    setEditingUser(null);
   }
 
   async function handleDeactivate(id) {
@@ -223,8 +251,12 @@ export default function UsersPage() {
       {showModal && (
         <UserModal
           user={editingUser}
-          onClose={() => setShowModal(false)}
-          onSaved={refetch}
+          onClose={() => {
+            setShowModal(false);
+            setEditingUser(null);
+            setRequestId(null);
+          }}
+          onSaved={handleModalSaved}
         />
       )}
     </div>
