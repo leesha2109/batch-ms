@@ -7,20 +7,15 @@ export default function PendingRequestsPanel({ requests: initial }) {
   const [loading, setLoading] = useState(null)
   const router = useRouter()
 
-  const handleAction = async (id, status) => {
-    setLoading(id + status)
-
+  const handleReject = async (id) => {
+    setLoading(id + 'rejected')
     await fetch(`/api/request-access/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status })
+      body: JSON.stringify({ status: 'rejected' })
     })
-
-    // Remove from the list either way (approved or rejected)
     setRequests(prev => prev.filter(r => r._id !== id))
     setLoading(null)
-
-    // Refresh the server component so stat cards update
     router.refresh()
   }
 
@@ -57,14 +52,23 @@ export default function PendingRequestsPanel({ requests: initial }) {
 
               <div className="flex gap-2">
                 <button
-                  onClick={() => handleAction(req._id, 'approved')}
+                  onClick={() => {
+                    localStorage.setItem('pendingRequest', JSON.stringify({
+                      name: req.name,
+                      email: req.email,
+                      role: req.role,
+                      studentNumber: req.studentNumber || '',
+                      requestId: req._id
+                    }))
+                    router.push('/dashboard/hod/users')
+                  }}
                   disabled={!!loading}
-                  className="text-xs px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 disabled:opacity-50 cursor-pointer"
+                  className="text-xs px-3 py-1.5 bg-gray-900 text-white border border-gray-900 rounded-lg hover:bg-gray-700 disabled:opacity-50 cursor-pointer"
                 >
-                  {loading === req._id + 'approved' ? '...' : '✓ Approve'}
+                  + Add User
                 </button>
                 <button
-                  onClick={() => handleAction(req._id, 'rejected')}
+                  onClick={() => handleReject(req._id)}
                   disabled={!!loading}
                   className="text-xs px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 disabled:opacity-50 cursor-pointer"
                 >
