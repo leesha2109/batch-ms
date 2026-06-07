@@ -10,7 +10,7 @@ const ROLES = [
 ];
 
 export default function UserModal({ user, onClose, onSaved }) {
-  const isEditing = !!user;
+  const isEditing = !!user?._id;
 
   const [form, setForm] = useState({
     name: "",
