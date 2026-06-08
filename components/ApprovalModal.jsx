@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const ROLES = [
   { value: "coordinator", label: "Batch Coordinator" },
@@ -9,37 +9,21 @@ const ROLES = [
   { value: "student", label: "Student" },
 ];
 
-export default function UserModal({ user, onClose, onSaved }) {
-  const isEditing = !!(user && user._id);
-
+export default function ApprovalModal({ request, onClose, onApproved }) {
   const [form, setForm] = useState({
-    name: "",
-    email: "",
+    name: request.name,
+    email: request.email,
     password: "",
-    role: "lecturer",
-    isActive: true,
+    role: request.role === "student" ? "student" : request.role,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // fill form when editing
-  useEffect(() => {
-    if (user) {
-      setForm({
-        name: user.name,
-        email: user.email,
-        password: "", // leave blank unless changing
-        role: user.role,
-        isActive: user.isActive,
-      });
-    }
-  }, [user]);
-
   function handleChange(e) {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
   }
 
@@ -49,31 +33,42 @@ export default function UserModal({ user, onClose, onSaved }) {
     setLoading(true);
 
     try {
-      const url = isEditing ? `/api/users/${user._id}` : "/api/users";
-      const method = isEditing ? "PATCH" : "POST";
-
-      const body = { ...form };
-      // don't send empty password when editing
-      if (isEditing && !body.password) delete body.password;
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-
-      if (!data.success) {
-        setError(data.message);
+      if (!form.password) {
+        setError("Password is required");
+        setLoading(false);
         return;
       }
 
-      onSaved(); // refresh list
-      onClose(); // close modal
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
+      // Call PATCH to request-access with createUser=true so server creates the
+      // user and marks the request approved atomically (avoids race/inconsistency)
+      const approveRes = await fetch(`/api/request-access/${request._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          action: "approve",
+          createUser: true,
+          password: form.password,
+        }),
+      });
+
+      const approveData = await approveRes.json();
+
+      // Check both success flag and HTTP status
+      if (!approveRes.ok || !approveData.success) {
+        const errorMsg =
+          approveData.message ||
+          `Request failed with status ${approveRes.status}`;
+        setError(errorMsg);
+        setLoading(false);
+        return;
+      }
+
+      onApproved();
+      onClose();
+    } catch (err) {
+      console.error("Approval error:", err);
+      setError(err.message || "Something went wrong");
       setLoading(false);
     }
   }
@@ -84,7 +79,7 @@ export default function UserModal({ user, onClose, onSaved }) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-base font-semibold text-gray-800">
-            {isEditing ? "Edit user" : "Add new user"}
+            Approve & Create User
           </h2>
           <button
             onClick={onClose}
@@ -105,8 +100,8 @@ export default function UserModal({ user, onClose, onSaved }) {
               value={form.name}
               onChange={handleChange}
               required
-              placeholder="e.g. Kasun Perera"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+              disabled
             />
           </div>
 
@@ -120,25 +115,23 @@ export default function UserModal({ user, onClose, onSaved }) {
               value={form.email}
               onChange={handleChange}
               required
-              placeholder="kasun@university.lk"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+              disabled
             />
           </div>
 
           <div>
             <label className="text-xs text-gray-500 block mb-1">
-              {isEditing
-                ? "New password (leave blank to keep current)"
-                : "Password"}
+              Password <span className="text-red-500">*</span>
             </label>
             <input
               name="password"
               type="password"
               value={form.password}
               onChange={handleChange}
-              required={!isEditing}
+              required
               placeholder="Minimum 6 characters"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -148,7 +141,7 @@ export default function UserModal({ user, onClose, onSaved }) {
               name="role"
               value={form.role}
               onChange={handleChange}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {ROLES.map((r) => (
                 <option key={r.value} value={r.value}>
@@ -158,24 +151,8 @@ export default function UserModal({ user, onClose, onSaved }) {
             </select>
           </div>
 
-          {isEditing && (
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="isActive"
-                id="isActive"
-                checked={form.isActive}
-                onChange={handleChange}
-                className="w-4 h-4"
-              />
-              <label htmlFor="isActive" className="text-sm text-gray-600">
-                Account is active
-              </label>
-            </div>
-          )}
-
           {error && (
-            <div className="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg">
+            <div className="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg border border-red-200">
               {error}
             </div>
           )}
@@ -184,20 +161,17 @@ export default function UserModal({ user, onClose, onSaved }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-gray-200 text-gray-600 py-2 rounded-lg text-sm hover:bg-gray-50"
+              disabled={loading}
+              className="flex-1 border border-gray-200 text-gray-600 py-2 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-sm hover:bg-gray-700 disabled:opacity-50"
+              className="flex-1 bg-green-600 text-white py-2 rounded-lg text-sm hover:bg-green-700 disabled:opacity-50 font-medium"
             >
-              {loading
-                ? "Saving..."
-                : isEditing
-                  ? "Save changes"
-                  : "Create user"}
+              {loading ? "Creating..." : "Create User"}
             </button>
           </div>
         </form>

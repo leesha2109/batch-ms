@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useUsers } from "@/hooks/useUsers";
 import UserModal from "@/components/UserModal";
 import TopHeader from "@/components/TopHeader";
@@ -29,6 +30,8 @@ const ROLE_LABELS = {
   student: "Student",
 };
 
+import { useRouter } from "next/navigation";
+
 export default function UsersPage() {
   const [activeTab, setActiveTab] = useState("");
   const [search, setSearch] = useState("");
@@ -38,6 +41,9 @@ export default function UsersPage() {
   const [requestId, setRequestId] = useState(null);
 
   const { users, loading, error, refetch } = useUsers(activeTab);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestId = searchParams.get("requestId");
 
   // Auto-open modal if coming from pending request
   useEffect(() => {
@@ -56,6 +62,29 @@ export default function UsersPage() {
       u.name.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase()),
   );
+
+  // handle prefill from a requestId (open add-user modal)
+  useEffect(() => {
+    async function loadRequest(id) {
+      try {
+        const res = await fetch(`/api/request-access/${id}`);
+        const data = await res.json();
+        if (data.success && data.request) {
+          // prefill modal for create (no _id so UserModal treats as create)
+          setEditingUser({
+            name: data.request.name,
+            email: data.request.email,
+            role: data.request.role,
+          });
+          setShowModal(true);
+        }
+      } catch (err) {
+        console.error("Failed to load request", err);
+      }
+    }
+
+    if (requestId) loadRequest(requestId);
+  }, [requestId]);
 
   function handleEdit(user) {
     setEditingUser(user);
@@ -253,10 +282,28 @@ export default function UsersPage() {
           user={editingUser}
           onClose={() => {
             setShowModal(false);
-            setEditingUser(null);
-            setRequestId(null);
+            // remove requestId from URL if present
+            if (requestId) router.replace("/dashboard/hod/users");
           }}
-          onSaved={handleModalSaved}
+          onSaved={async () => {
+            // refresh user list
+            await refetch();
+            // if we came from a request, mark it approved
+            if (requestId) {
+              try {
+                await fetch(`/api/request-access/${requestId}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include",
+                  body: JSON.stringify({ action: "approve" }),
+                });
+              } catch (err) {
+                console.error("Failed to mark request approved", err);
+              }
+              // remove query
+              router.replace("/dashboard/hod/users");
+            }
+          }}
         />
       )}
     </div>

@@ -1,21 +1,101 @@
-import { getServerSession } from "next-auth";
-import authOptions from "@/lib/authOptions";
+"use client";
+
+import { useState, useEffect } from "react";
 import TopHeader from "@/components/TopHeader";
 import StatCard from "@/components/StatCard";
-import connectDB from "@/lib/mongoose";
-import User from "@/models/User";
-import AccessRequest from "@/models/AccessRequest";
-import PendingRequestsPanel from "@/components/PendingRequestsPanel";
+import PendingApprovals from "@/components/PendingApprovals";
+import ApprovalModal from "@/components/ApprovalModal";
 
-export default async function HodDashboard() {
-  const session = await getServerSession(authOptions);
+export default function HodDashboard() {
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [totalLecturers, setTotalLecturers] = useState(0);
+  const [totalVisiting, setTotalVisiting] = useState(0);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
 
-  await connectDB();
-  const totalStudents = await User.countDocuments({ role: "student" });
-  const totalLecturers = await User.countDocuments({ role: "lecturer" });
-  const totalVisiting = await User.countDocuments({
-    role: "visiting_lecturer",
-  });
+  useEffect(() => {
+    async function loadDashboardData() {
+      try {
+        // Fetch stats from a new endpoint or call multiple endpoints
+        const statsRes = await fetch("/api/dashboard", {
+          credentials: "include",
+        });
+        if (statsRes.ok) {
+          const data = await statsRes.json();
+          setTotalStudents(data.totalStudents || 0);
+          setTotalLecturers(data.totalLecturers || 0);
+          setTotalVisiting(data.totalVisiting || 0);
+        }
+
+        // Fetch pending requests
+        const requestsRes = await fetch("/api/request-access", {
+          credentials: "include",
+        });
+        if (requestsRes.ok) {
+          const data = await requestsRes.json();
+          const filtered = (data.requests || []).filter(
+            (r) => r.status === "pending",
+          );
+          setPendingRequests(filtered);
+        }
+      } catch (err) {
+        console.error("Failed to load dashboard data", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadDashboardData();
+  }, []);
+
+  function handleAddUser(request) {
+    setSelectedRequest(request);
+    setShowApprovalModal(true);
+  }
+
+  function handleReject(id) {
+    setPendingRequests((prev) => prev.filter((r) => r._id !== id));
+  }
+
+  async function handleApproved() {
+    setShowApprovalModal(false);
+    setSelectedRequest(null);
+
+    // Refresh stats
+    try {
+      const statsRes = await fetch("/api/dashboard", {
+        credentials: "include",
+      });
+      if (statsRes.ok) {
+        const data = await statsRes.json();
+        setTotalStudents(data.totalStudents || 0);
+        setTotalLecturers(data.totalLecturers || 0);
+        setTotalVisiting(data.totalVisiting || 0);
+      }
+    } catch (err) {
+      console.error("Failed to refresh stats", err);
+    }
+
+    // Refresh pending requests
+    try {
+      const res = await fetch("/api/request-access", {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const filtered = (data.requests || []).filter(
+          (r) => r.status === "pending",
+        );
+        setPendingRequests(filtered);
+      }
+    } catch (err) {
+      console.error("Failed to refresh requests", err);
+    }
+  }
+
+  const pendingCount = pendingRequests.length;
 
   const pendingRequests = await AccessRequest.find({ status: "pending" })
     .sort({ createdAt: -1 })
@@ -25,7 +105,7 @@ export default async function HodDashboard() {
     <div>
       <TopHeader
         title="Dashboard"
-        subtitle={`Welcome back, ${session?.user?.name}`}
+        subtitle="Welcome back, manage your batch and requests"
       />
 
       <div className="px-8 py-6">
@@ -45,7 +125,7 @@ export default async function HodDashboard() {
           />
           <StatCard
             label="Pending Approvals"
-            value={pendingRequests.length}
+            value={pendingCount}
             sub="Access requests"
             color="red"
           />
@@ -59,9 +139,21 @@ export default async function HodDashboard() {
 
         {/* Panels */}
         <div className="grid grid-cols-2 gap-6">
-          <PendingRequestsPanel
-            requests={JSON.parse(JSON.stringify(pendingRequests))}
-          />
+          <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <h2 className="text-sm font-semibold text-gray-700 mb-4">
+              Pending Approvals
+            </h2>
+            {loading ? (
+              <p className="text-sm text-gray-400">Loading...</p>
+            ) : (
+              <PendingApprovals
+                initial={pendingRequests}
+                onAddUser={handleAddUser}
+                onReject={handleReject}
+                onApproved={handleApproved}
+              />
+            )}
+          </div>
 
           <div className="bg-white rounded-xl border border-gray-100 p-5">
             <h2 className="text-sm font-semibold text-gray-700 mb-4">
@@ -71,6 +163,18 @@ export default async function HodDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Approval Modal */}
+      {showApprovalModal && selectedRequest && (
+        <ApprovalModal
+          request={selectedRequest}
+          onClose={() => {
+            setShowApprovalModal(false);
+            setSelectedRequest(null);
+          }}
+          onApproved={handleApproved}
+        />
+      )}
     </div>
   );
 }
