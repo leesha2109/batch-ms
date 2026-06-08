@@ -60,7 +60,7 @@ export default function PendingApprovals({
       {requests.map((r) => (
         <div
           key={r._id}
-          className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-transparent border border-blue-100 rounded-lg hover:shadow-sm transition-shadow"
+          className="flex items-center justify-between p-3 bg-linear-to-r from-blue-50 to-transparent border border-blue-100 rounded-lg hover:shadow-sm transition-shadow"
         >
           <div className="flex-1">
             <div className="text-sm font-semibold text-gray-800">
