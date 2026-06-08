@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useUsers } from "@/hooks/useUsers";
 import UserModal from "@/components/UserModal";
 import TopHeader from "@/components/TopHeader";
@@ -16,10 +16,10 @@ const ROLE_TABS = [
 
 const ROLE_COLORS = {
   hod: "bg-purple-100 text-purple-700",
-  coordinator: "bg-blue-100   text-blue-700",
-  lecturer: "bg-green-100  text-green-700",
+  coordinator: "bg-blue-100 text-blue-700",
+  lecturer: "bg-green-100 text-green-700",
   visiting_lecturer: "bg-orange-100 text-orange-700",
-  student: "bg-gray-100   text-gray-700",
+  student: "bg-gray-100 text-gray-700",
 };
 
 const ROLE_LABELS = {
@@ -29,8 +29,6 @@ const ROLE_LABELS = {
   visiting_lecturer: "Visiting Lecturer",
   student: "Student",
 };
-
-import { useRouter } from "next/navigation";
 
 export default function UsersPage() {
   const [activeTab, setActiveTab] = useState("");
@@ -42,10 +40,7 @@ export default function UsersPage() {
 
   const { users, loading, error, refetch } = useUsers(activeTab);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const requestId = searchParams.get("requestId");
 
-  // Auto-open modal if coming from pending request
   useEffect(() => {
     const stored = localStorage.getItem("pendingRequest");
     if (stored) {
@@ -62,29 +57,6 @@ export default function UsersPage() {
       u.name.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase()),
   );
-
-  // handle prefill from a requestId (open add-user modal)
-  useEffect(() => {
-    async function loadRequest(id) {
-      try {
-        const res = await fetch(`/api/request-access/${id}`);
-        const data = await res.json();
-        if (data.success && data.request) {
-          // prefill modal for create (no _id so UserModal treats as create)
-          setEditingUser({
-            name: data.request.name,
-            email: data.request.email,
-            role: data.request.role,
-          });
-          setShowModal(true);
-        }
-      } catch (err) {
-        console.error("Failed to load request", err);
-      }
-    }
-
-    if (requestId) loadRequest(requestId);
-  }, [requestId]);
 
   function handleEdit(user) {
     setEditingUser(user);
@@ -149,7 +121,6 @@ export default function UsersPage() {
       />
 
       <div className="px-8 py-6">
-        {/* Role tabs */}
         <div className="flex gap-1 mb-5 border-b border-gray-100">
           {ROLE_TABS.map((tab) => (
             <button
@@ -167,7 +138,6 @@ export default function UsersPage() {
           ))}
         </div>
 
-        {/* Search bar */}
         <div className="mb-5">
           <input
             type="text"
@@ -178,7 +148,6 @@ export default function UsersPage() {
           />
         </div>
 
-        {/* Table */}
         {loading ? (
           <p className="text-sm text-gray-400">Loading users...</p>
         ) : error ? (
@@ -188,60 +157,33 @@ export default function UsersPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">
-                    Name
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">
-                    Email
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">
-                    Role
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">
-                    Status
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">
-                    Created
-                  </th>
+                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">Name</th>
+                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">Email</th>
+                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">Role</th>
+                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">Status</th>
+                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">Created</th>
                   <th className="px-5 py-3"></th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={6}
-                      className="px-5 py-8 text-center text-gray-400 text-sm"
-                    >
+                    <td colSpan={6} className="px-5 py-8 text-center text-gray-400 text-sm">
                       No users found
                     </td>
                   </tr>
                 ) : (
                   filtered.map((user) => (
-                    <tr
-                      key={user._id}
-                      className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-5 py-3 font-medium text-gray-800">
-                        {user.name}
-                      </td>
+                    <tr key={user._id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                      <td className="px-5 py-3 font-medium text-gray-800">{user.name}</td>
                       <td className="px-5 py-3 text-gray-500">{user.email}</td>
                       <td className="px-5 py-3">
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full font-medium ${ROLE_COLORS[user.role]}`}
-                        >
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${ROLE_COLORS[user.role]}`}>
                           {ROLE_LABELS[user.role]}
                         </span>
                       </td>
                       <td className="px-5 py-3">
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full font-medium
-                          ${
-                            user.isActive
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-500"
-                          }`}
-                        >
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${user.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>
                           {user.isActive ? "Active" : "Inactive"}
                         </span>
                       </td>
@@ -250,10 +192,7 @@ export default function UsersPage() {
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2 justify-end">
-                          <button
-                            onClick={() => handleEdit(user)}
-                            className="text-xs text-blue-600 hover:underline"
-                          >
+                          <button onClick={() => handleEdit(user)} className="text-xs text-blue-600 hover:underline">
                             Edit
                           </button>
                           {user.isActive && (
@@ -276,34 +215,15 @@ export default function UsersPage() {
         )}
       </div>
 
-      {/* Modal */}
       {showModal && (
         <UserModal
           user={editingUser}
           onClose={() => {
             setShowModal(false);
-            // remove requestId from URL if present
-            if (requestId) router.replace("/dashboard/hod/users");
+            setEditingUser(null);
+            setRequestId(null);
           }}
-          onSaved={async () => {
-            // refresh user list
-            await refetch();
-            // if we came from a request, mark it approved
-            if (requestId) {
-              try {
-                await fetch(`/api/request-access/${requestId}`, {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json" },
-                  credentials: "include",
-                  body: JSON.stringify({ action: "approve" }),
-                });
-              } catch (err) {
-                console.error("Failed to mark request approved", err);
-              }
-              // remove query
-              router.replace("/dashboard/hod/users");
-            }
-          }}
+          onSaved={handleModalSaved}
         />
       )}
     </div>
