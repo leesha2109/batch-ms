@@ -97,10 +97,6 @@ export default function HodDashboard() {
 
   const pendingCount = pendingRequests.length;
 
-  const pendingRequests = await AccessRequest.find({ status: "pending" })
-    .sort({ createdAt: -1 })
-    .lean();
-
   return (
     <div>
       <TopHeader
