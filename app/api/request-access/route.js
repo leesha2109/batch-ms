@@ -4,6 +4,7 @@ import connectDB from "@/lib/mongoose";
 import AccessRequest from "@/models/AccessRequest";
 
 export async function POST(request) {
+  await connectDB()
   try {
     await connectDB();
     const body = await request.json();
