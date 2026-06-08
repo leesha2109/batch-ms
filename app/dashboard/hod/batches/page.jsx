@@ -37,20 +37,16 @@ export default function BatchesPage() {
   const displayedSemesters = displayed?.semesters || [];
   const slots = displayed ? getSlots(displayed.programme) : 0;
   const fullSemesters = displayed
-    ? displayedSemesters.length >= slots
-      ? displayedSemesters
-      : Array.from(
-          { length: slots },
-          (_, idx) =>
-            displayedSemesters.find(
-              (sem) => sem.semesterNumber === idx + 1,
-            ) || {
-              _id: `placeholder-${idx + 1}`,
-              semesterNumber: idx + 1,
-              status: "planned",
-              placeholder: true,
-            },
-        )
+    ? Array.from(
+        { length: slots },
+        (_, idx) =>
+          displayedSemesters.find((sem) => sem.semesterNumber === idx + 1) || {
+            _id: `placeholder-${idx + 1}`,
+            semesterNumber: idx + 1,
+            status: "planned",
+            placeholder: true,
+          },
+      )
     : [];
 
   const completedSemestersCount = fullSemesters.filter(
@@ -60,6 +56,15 @@ export default function BatchesPage() {
   function handleEditBatch(batch) {
     setEditingBatch(batch);
     setShowBatchModal(true);
+  }
+
+  async function refreshSelectedBatch(id) {
+    if (!id) return;
+    const res = await fetch(`/api/batches/${id}`);
+    const data = await res.json();
+    if (data.success) {
+      setSelectedBatch(data.batch);
+    }
   }
 
   async function handleDeleteBatch(id) {
@@ -151,7 +156,7 @@ export default function BatchesPage() {
                 <span>
                   {batch.semesters?.filter((s) => s.status === "completed")
                     .length || 0}
-                  /{Math.max(batch.semesters?.length || 0, 8)} sems
+                  /{getSlots(batch.programme)} sems
                 </span>
               </div>
             </div>
@@ -318,7 +323,9 @@ export default function BatchesPage() {
           onClose={() => setShowBatchModal(false)}
           onSaved={(batch) => {
             refetch();
-            setSelectedBatch(batch);
+            if (batch?._id) {
+              refreshSelectedBatch(batch._id);
+            }
           }}
         />
       )}
@@ -328,8 +335,9 @@ export default function BatchesPage() {
           batchId={displayed._id}
           semester={editingSem}
           onClose={() => setEditingSem(null)}
-          onSaved={() => {
+          onSaved={(batch) => {
             refetch();
+            setSelectedBatch(batch);
             setEditingSem(null);
           }}
         />

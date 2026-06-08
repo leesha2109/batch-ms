@@ -45,11 +45,18 @@ export default function BatchModal({ batch, onClose, onSaved }) {
     try {
       const url = isEditing ? `/api/batches/${batch._id}` : "/api/batches";
       const method = isEditing ? "PATCH" : "POST";
+      const payload = {
+        ...form,
+        intakeYear: Number(form.intakeYear),
+        totalCreditsRequired: Number(form.totalCreditsRequired),
+        coordinatorId: form.coordinatorId || null,
+      };
 
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        credentials: "include",
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
 

@@ -1,26 +1,26 @@
 import connectDB from "@/lib/mongoose";
 import Batch from "@/models/Batch";
-import { getServerSession } from "next-auth";
-import authOptions from "@/lib/authOptions";
+import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
 // PATCH — update a specific semester inside a batch
 export async function PATCH(req, { params }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "hod") {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !["hod", "coordinator"].includes(token.role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await connectDB();
 
+    const { id, semid } = await params;
     const body = await req.json();
     const { startDate, endDate, status } = body;
 
     const batch = await Batch.findOneAndUpdate(
       {
-        _id: params.id,
-        "semesters._id": params.semid,
+        _id: id,
+        "semesters._id": semid,
       },
       {
         $set: {
@@ -29,7 +29,7 @@ export async function PATCH(req, { params }) {
           "semesters.$.status": status,
         },
       },
-      { new: true },
+      { returnDocument: "after" },
     ).populate("coordinatorId", "name email");
 
     if (!batch) {

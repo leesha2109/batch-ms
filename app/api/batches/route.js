@@ -1,14 +1,13 @@
 import connectDB from "@/lib/mongoose";
 import Batch from "@/models/Batch";
-import { getServerSession } from "next-auth";
-import authOptions from "@/lib/authOptions";
+import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
 // GET all batches
-export async function GET() {
+export async function GET(req) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -30,8 +29,8 @@ export async function GET() {
 // POST — create new batch
 export async function POST(req) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "hod") {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || token.role !== "hod") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -58,8 +57,8 @@ export async function POST(req) {
       );
     }
 
-    // auto generate 8 planned semesters
-    const semesters = Array.from({ length: 8 }, (_, i) => ({
+    const semesterCount = programme === "BSc" ? 4 : programme === "BCS" ? 2 : 0;
+    const semesters = Array.from({ length: semesterCount }, (_, i) => ({
       semesterNumber: i + 1,
       status: "planned",
     }));
