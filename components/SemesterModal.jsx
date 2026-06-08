@@ -1,70 +1,84 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 
 export default function SemesterModal({ batchId, semester, onClose, onSaved }) {
   const [form, setForm] = useState({
-    startDate: '',
-    endDate:   '',
-    status:    'planned',
-  })
-  const [loading, setLoading] = useState(false)
-  const [error,   setError]   = useState('')
+    startDate: "",
+    endDate: "",
+    status: "planned",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (semester) {
       setForm({
         startDate: semester.startDate
-          ? new Date(semester.startDate).toISOString().split('T')[0] : '',
+          ? new Date(semester.startDate).toISOString().split("T")[0]
+          : "",
         endDate: semester.endDate
-          ? new Date(semester.endDate).toISOString().split('T')[0] : '',
+          ? new Date(semester.endDate).toISOString().split("T")[0]
+          : "",
         status: semester.status,
-      })
+      });
     }
-  }, [semester])
+  }, [semester]);
 
   function handleChange(e) {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
   async function handleSubmit(e) {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
+      const payload = {
+        status: form.status,
+        startDate: form.startDate || null,
+        endDate: form.endDate || null,
+      };
       const res = await fetch(
         `/api/batches/${batchId}/semesters/${semester._id}`,
         {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form)
-        }
-      )
-      const data = await res.json()
-      if (!data.success) { setError(data.message); return }
-      onSaved()
-      onClose()
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        },
+      );
+      const data = await res.json();
+      if (!data.success) {
+        setError(data.message);
+        return;
+      }
+      onSaved(data.batch);
+      onClose();
     } catch {
-      setError('Something went wrong')
+      setError("Something went wrong");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-sm shadow-xl">
-
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-base font-semibold text-gray-800">
             Edit Semester {semester?.semesterNumber}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-xl"
+          >
+            ✕
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
-
           <div>
             <label className="text-xs text-gray-500 block mb-1">Status</label>
             <select
@@ -80,7 +94,9 @@ export default function SemesterModal({ batchId, semester, onClose, onSaved }) {
           </div>
 
           <div>
-            <label className="text-xs text-gray-500 block mb-1">Start date</label>
+            <label className="text-xs text-gray-500 block mb-1">
+              Start date
+            </label>
             <input
               name="startDate"
               type="date"
@@ -102,7 +118,9 @@ export default function SemesterModal({ batchId, semester, onClose, onSaved }) {
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg">{error}</div>
+            <div className="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg">
+              {error}
+            </div>
           )}
 
           <div className="flex gap-3 pt-2">
@@ -118,12 +136,11 @@ export default function SemesterModal({ batchId, semester, onClose, onSaved }) {
               disabled={loading}
               className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-sm hover:bg-gray-700 disabled:opacity-50"
             >
-              {loading ? 'Saving...' : 'Save semester'}
+              {loading ? "Saving..." : "Save semester"}
             </button>
           </div>
-
         </form>
       </div>
     </div>
-  )
+  );
 }
