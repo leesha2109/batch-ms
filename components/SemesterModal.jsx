@@ -66,13 +66,13 @@ export default function SemesterModal({ batchId, semester, onClose, onSaved }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-sm shadow-xl">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-blue-100">
+          <h2 className="text-base font-semibold text-blue-800">
             Edit Semester {semester?.semesterNumber}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl"
+            className="text-blue-400 hover:text-gray-600 text-xl"
           >
             ✕
           </button>
@@ -80,12 +80,12 @@ export default function SemesterModal({ batchId, semester, onClose, onSaved }) {
 
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
           <div>
-            <label className="text-xs text-gray-500 block mb-1">Status</label>
+            <label className="text-md text-blue-500 block mb-1">Status</label>
             <select
               name="status"
               value={form.status}
               onChange={handleChange}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-blue-200 rounded-lg px-3 py-2 text-md focus:outline-none focus:ring-2 focus:ring-gray-900"
             >
               <option value="planned">Planned</option>
               <option value="active">Active</option>
@@ -94,7 +94,7 @@ export default function SemesterModal({ batchId, semester, onClose, onSaved }) {
           </div>
 
           <div>
-            <label className="text-xs text-gray-500 block mb-1">
+            <label className="text-md text-blue-500 block mb-1">
               Start date
             </label>
             <input
@@ -102,23 +102,23 @@ export default function SemesterModal({ batchId, semester, onClose, onSaved }) {
               type="date"
               value={form.startDate}
               onChange={handleChange}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-blue-200 rounded-lg px-3 py-2 text-md focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
           </div>
 
           <div>
-            <label className="text-xs text-gray-500 block mb-1">End date</label>
+            <label className="text-md text-blue-500 block mb-1">End date</label>
             <input
               name="endDate"
               type="date"
               value={form.endDate}
               onChange={handleChange}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-blue-200 rounded-lg px-3 py-2 text-md focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg">
+            <div className="bg-red-50 text-red-600 text-md px-3 py-2 rounded-lg">
               {error}
             </div>
           )}
@@ -127,14 +127,14 @@ export default function SemesterModal({ batchId, semester, onClose, onSaved }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-gray-200 text-gray-600 py-2 rounded-lg text-sm hover:bg-gray-50"
+              className="flex-1 border border-blue-200 text-blue-600 py-2 rounded-lg text-md hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-sm hover:bg-gray-700 disabled:opacity-50"
+              className="flex-1 bg-blue-900 text-white py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
             >
               {loading ? "Saving..." : "Save semester"}
             </button>
