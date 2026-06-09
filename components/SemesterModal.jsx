@@ -85,7 +85,7 @@ export default function SemesterModal({ batchId, semester, onClose, onSaved }) {
               name="status"
               value={form.status}
               onChange={handleChange}
-              className="w-full border border-blue-200 rounded-lg px-3 py-2 text-md focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-blue-200 rounded-lg px-3 py-2 text-md focus:outline-none focus:ring-2 focus:ring-blue-900"
             >
               <option value="planned">Planned</option>
               <option value="active">Active</option>
@@ -102,7 +102,7 @@ export default function SemesterModal({ batchId, semester, onClose, onSaved }) {
               type="date"
               value={form.startDate}
               onChange={handleChange}
-              className="w-full border border-blue-200 rounded-lg px-3 py-2 text-md focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-blue-200 rounded-lg px-3 py-2 text-md focus:outline-none focus:ring-2 focus:ring-blue-900"
             />
           </div>
 
@@ -113,7 +113,7 @@ export default function SemesterModal({ batchId, semester, onClose, onSaved }) {
               type="date"
               value={form.endDate}
               onChange={handleChange}
-              className="w-full border border-blue-200 rounded-lg px-3 py-2 text-md focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-blue-200 rounded-lg px-3 py-2 text-md focus:outline-none focus:ring-2 focus:ring-blue-900"
             />
           </div>
 
@@ -127,7 +127,7 @@ export default function SemesterModal({ batchId, semester, onClose, onSaved }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-blue-200 text-blue-600 py-2 rounded-lg text-md hover:bg-gray-50"
+              className="flex-1 border border-blue-200 text-blue-600 py-2 rounded-lg text-md hover:bg-blue-50"
             >
               Cancel
             </button>
