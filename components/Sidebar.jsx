@@ -59,10 +59,10 @@ export default function Sidebar() {
     <aside className="w-56 min-h-screen bg-blue-100 border-r border-gray-100 flex flex-col">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-blue-100">
-        <span className="text-base font-semibold text-gray-800 text-center">
+        <span className="text-xl font-bold text-blue-900 text-center">
           🎓 BatchMS
         </span>
-        <p className="text-md text-blue-400 mt-0.5 capitalize">{role}</p>
+        <p className="text-md text-blue-400 mt-0.5 capitalize text-center">{role}</p>
       </div>
 
       {/* Nav links */}
@@ -73,10 +73,10 @@ export default function Sidebar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-l transition-colors
                 ${
                   isActive
-                    ? "bg-blue-900 text-white font-medium"
+                    ? "bg-blue-900 text-white font-semibold"
                     : "text-blue-600 hover:bg-blue-100 hover:text-blue-900"
                 }`}
             >
