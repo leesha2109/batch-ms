@@ -8,20 +8,19 @@ const hodLinks = [
   { label: "Dashboard", href: "/dashboard/hod", icon: "🏠" },
   { label: "Batches", href: "/dashboard/hod/batches", icon: "🎓" },
   { label: "Users", href: "/dashboard/hod/users", icon: "👥" },
-  { label: "Subjects", href: "/dashboard/hod/subjects", icon: "📚" },
   { label: "Marks", href: "/dashboard/hod/marks", icon: "📝" },
   { label: "Projects", href: "/dashboard/hod/projects", icon: "🔬" },
   { label: "Lecturers", href: "/dashboard/hod/lecturers", icon: "👨‍🏫" },
-  { label: "Students", href: "/dashboard/hod/students", icon: "👨‍🎓" },
   { label: "Payments", href: "/dashboard/hod/payments", icon: "💰" },
   { label: "Settings", href: "/dashboard/hod/settings", icon: "⚙️" },
 ];
 
 const coordinatorLinks = [
   { label: "Dashboard", href: "/dashboard/coordinator", icon: "🏠" },
-  { label: "My Batch", href: "/dashboard/coordinator/batch", icon: "🎓" },
+  { label: "My Batches", href: "/dashboard/coordinator/batch", icon: "🎓" },
   { label: "Timetable", href: "/dashboard/coordinator/timetable", icon: "📅" },
   { label: "Marks", href: "/dashboard/coordinator/marks", icon: "📝" },
+  { label: "Projects", href: "/dashboard/coordinator/projects", icon: "🔬" },
   { label: "Students", href: "/dashboard/coordinator/students", icon: "👨‍🎓" },
   { label: "Payments", href: "/dashboard/coordinator/payments", icon: "💰" },
 ];
