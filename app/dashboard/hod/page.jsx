@@ -151,11 +151,11 @@ export default function HodDashboard() {
             )}
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-100 p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-4">
+          <div className="bg-blue-100 rounded-xl border border-gray-100 p-5">
+            <h2 className="text-m font-semibold text-blue-700 mb-4">
               Recent Activity
             </h2>
-            <p className="text-sm text-gray-400">No recent activity yet.</p>
+            <p className="text-sm text-blue-400">No recent activity yet.</p>
           </div>
         </div>
       </div>
