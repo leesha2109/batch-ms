@@ -17,8 +17,10 @@ const hodLinks = [
 
 const coordinatorLinks = [
   { label: "Dashboard", href: "/dashboard/coordinator", icon: "🏠" },
-  { label: "My Batches", href: "/dashboard/coordinator/batch", icon: "🎓" },
+  { label: "My Batches", href: "/dashboard/coordinator/batches", icon: "🎓" },
+  { label: "Users", href: "/dashboard/coordinator/users", icon: "👥" },
   { label: "Timetable", href: "/dashboard/coordinator/timetable", icon: "📅" },
+  { label: "Subjects", href: "/dashboard/coordinator/subjects", icon: "📚" },
   { label: "Marks", href: "/dashboard/coordinator/marks", icon: "📝" },
   { label: "Projects", href: "/dashboard/coordinator/projects", icon: "🔬" },
   { label: "Students", href: "/dashboard/coordinator/students", icon: "👨‍🎓" },
@@ -41,7 +43,7 @@ const studentLinks = [
 
 const linksByRole = {
   hod: hodLinks,
-  coordinator: hodLinks,
+  coordinator: coordinatorLinks,
   lecturer: lecturerLinks,
   visiting_lecturer: lecturerLinks,
   student: studentLinks,
