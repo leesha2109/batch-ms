@@ -30,6 +30,11 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    studentId:   { type: String, default: '' },  // e.g. "BSc/2022/001"
+  phone:       { type: String, default: '' },
+  address:     { type: String, default: '' },
+  dateOfBirth: { type: Date,   default: null },
+  enrolledAt:  { type: Date,   default: null },
   },
   { timestamps: true },
 );
