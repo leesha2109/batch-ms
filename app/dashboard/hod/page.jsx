@@ -10,6 +10,9 @@ export default function HodDashboard() {
   const [totalStudents, setTotalStudents] = useState(0);
   const [totalLecturers, setTotalLecturers] = useState(0);
   const [totalVisiting, setTotalVisiting] = useState(0);
+  const [totalBatches, setTotalBatches] = useState(0);  
+  const [bscActive, setBscActive] = useState(0);          
+  const [bcsActive, setBcsActive] = useState(0);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -27,6 +30,9 @@ export default function HodDashboard() {
           setTotalStudents(data.totalStudents || 0);
           setTotalLecturers(data.totalLecturers || 0);
           setTotalVisiting(data.totalVisiting || 0);
+          setTotalBatches(data.totalBatches || 0);
+          setBscActive(data.bscActive || 0);
+          setBcsActive(data.bcsActive || 0);
         }
 
         // Fetch pending requests
@@ -73,6 +79,9 @@ export default function HodDashboard() {
         setTotalStudents(data.totalStudents || 0);
         setTotalLecturers(data.totalLecturers || 0);
         setTotalVisiting(data.totalVisiting || 0);
+        setTotalBatches(data.totalBatches || 0);
+        setBscActive(data.bscActive || 0);
+        setBcsActive(data.bcsActive || 0);
       }
     } catch (err) {
       console.error("Failed to refresh stats", err);
@@ -127,8 +136,8 @@ export default function HodDashboard() {
           />
           <StatCard
             label="Active Batches"
-            value="0"
-            sub="BSc & BCS"
+            value={totalBatches}
+            sub={`BSc: ${bscActive} · BCS: ${bcsActive}`}
             color="green"
           />
         </div>
