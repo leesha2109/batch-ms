@@ -132,7 +132,7 @@ function SubjectFormModal({ subject, onClose, onSaved }) {
               <select name="type" value={form.type} onChange={handleChange}
                 className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900">
                 <option value="theory">Theory</option>
-                <option value="practical">Practical</option>
+                <option value="practical">Theory + Practical</option>
                 <option value="project">Project</option>
               </select>
             </div>
@@ -174,8 +174,8 @@ function SubjectFormModal({ subject, onClose, onSaved }) {
 
           {!isEditing && form.programme === 'Both' && (
             <>
-              <div className="bg-purple-50 rounded-lg p-3 space-y-3">
-                <p className="text-xs font-medium text-purple-700">BSc details</p>
+              <div className="bg-purple-100 rounded-lg p-3 space-y-3">
+                <p className="text-md font-semibold text-purple-700">BSc details</p>
                 <div>
                   <label className="text-s text-blue-500 block mb-1">Course code</label>
                   <input name="bscCode" value={form.bscCode} onChange={handleChange} required
@@ -202,8 +202,8 @@ function SubjectFormModal({ subject, onClose, onSaved }) {
                 </div>
               </div>
 
-              <div className="bg-orange-50 rounded-lg p-3 space-y-3">
-                <p className="text-xs font-medium text-orange-700">BCS details (Level 1 only)</p>
+              <div className="bg-green-100 rounded-lg p-3 space-y-3">
+                <p className="text-md font-semibold text-green-700">BCS details</p>
                 <div>
                   <label className="text-s text-blue-500 block mb-1">Course code</label>
                   <input name="bcsCode" value={form.bcsCode} onChange={handleChange} required
