@@ -365,8 +365,8 @@ export default function SubjectsPage() {
   return (
     <div>
       <TopHeader
-        title="Subjects"
-        subtitle="Manage subject pool and semester assignments"
+        title="Courses"
+        subtitle="Manage Courses pool and semester assignments"
         action={
           <button onClick={() => { setEditSubject(null); setShowForm(true) }}
             className="bg-white text-blue-900 border border-blue-200 px-4 py-2 rounded-lg text-sm hover:bg-blue-50">
@@ -379,11 +379,11 @@ export default function SubjectsPage() {
 
         <div className="flex gap-0 border-b border-blue-100 mb-6">
           {[
-            { key: 'pool',     label: 'Subject pool' },
-            { key: 'assigned', label: 'Semester assignments' },
+            { key: 'pool',     label: 'Subject Pool' },
+            { key: 'assigned', label: 'Lecturer Assignments' },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
-              className={`px-5 py-2.5 text-sm border-b-2 -mb-px transition-colors
+              className={`px-5 py-2.5 text-md border-b-2 -mb-px transition-colors
                 ${tab === t.key
                   ? 'border-blue-900 text-blue-900 font-medium'
                   : 'border-transparent text-blue-400 hover:text-blue-600'}`}>
