@@ -5,11 +5,11 @@ const SubjectSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    uppercase: true   // e.g. "CS101"
+    uppercase: true
   },
   name: {
     type: String,
-    required: true    // e.g. "Data Structures"
+    required: true
   },
   credits: {
     type: Number,
@@ -23,8 +23,23 @@ const SubjectSchema = new mongoose.Schema({
   },
   programme: {
     type: String,
-    enum: ['BSc', 'BCS', 'Both'],
-    default: 'Both'
+    enum: ['BSc', 'BCS'],
+    required: true
+  },
+  groupId: {
+    type: String,
+    default: null
+  },
+  level: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 2
+  },
+  semester: {
+    type: Number,
+    required: true,
+    enum: [1, 2]
   },
   description: {
     type: String,
