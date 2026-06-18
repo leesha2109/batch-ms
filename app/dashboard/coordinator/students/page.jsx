@@ -77,25 +77,8 @@ function EnrollModal({ batches, onClose, onSaved }) {
               ))}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-gray-500 block mb-1">Phone</label>
-              <input name="phone" value={form.phone} onChange={handleChange}
-                placeholder="07X XXX XXXX"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"/>
-            </div>
-            <div>
-              <label className="text-xs text-gray-500 block mb-1">Date of birth</label>
-              <input name="dateOfBirth" type="date" value={form.dateOfBirth} onChange={handleChange}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"/>
-            </div>
-          </div>
-          <div>
-            <label className="text-xs text-gray-500 block mb-1">Address</label>
-            <textarea name="address" value={form.address} onChange={handleChange}
-              rows={2} placeholder="Home address"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"/>
-          </div>
+        
+          
           {error && <div className="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg">{error}</div>}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose}
@@ -118,7 +101,6 @@ function StudentProfile({ student, onClose, onUpdate }) {
   const [form,    setForm]    = useState({
     name:        student.name,
     phone:       student.phone       || '',
-    address:     student.address     || '',
     isActive:    student.isActive,
   })
   const [saving, setSaving] = useState(false)
@@ -195,17 +177,8 @@ function StudentProfile({ student, onClose, onUpdate }) {
                   <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"/>
                 </div>
-                <div>
-                  <label className="text-xs text-gray-500 block mb-1">Phone</label>
-                  <input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"/>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 block mb-1">Address</label>
-                  <textarea value={form.address} rows={2}
-                    onChange={e => setForm(p => ({ ...p, address: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"/>
-                </div>
+                
+                
                 <div className="flex items-center gap-2">
                   <input type="checkbox" id="activeCheck" checked={form.isActive}
                     onChange={e => setForm(p => ({ ...p, isActive: e.target.checked }))}

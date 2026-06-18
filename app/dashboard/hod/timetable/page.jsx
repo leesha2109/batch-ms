@@ -269,7 +269,7 @@ export default function TimetablePage() {
                           return (
                             <td key={day}
                               onClick={() => handleCellClick(day, time)}
-                              className="px-2 py-1.5 border border-gray-50 cursor-pointer hover:bg-blue-50 transition-colors text-center min-w-[110px]">
+                              className="px-2 py-1.5 border border-gray-50 cursor-pointer hover:bg-blue-50 transition-colors text-center min-w-27.5">
                               {assignment ? (
                                 <div className={`rounded-lg px-2 py-1.5 text-xs ${color}`}>
                                   <div className="font-medium">{assignment.subjectId?.code}</div>
