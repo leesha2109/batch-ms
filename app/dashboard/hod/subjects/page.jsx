@@ -448,17 +448,24 @@ export default function SubjectsPage() {
                             <div className="space-y-1">
                               {subs.map(s => (
                                 <div key={s._id} className="flex items-center justify-between py-2 border-b border-blue-100 last:border-0">
-                                  <div className="flex items-center gap-2">
-                                    <div>
-                                      <p className="text-s font-mono text-blue-400">{s.code}</p>
-                                      <p className="text-sm text-blue-800">{s.name}</p>
-                                    </div>
-                                    {s.groupId && (
-                                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-500">
-                                        BSc & BCS
-                                      </span>
-                                    )}
-                                  </div>
+                                <div className="flex items-center gap-2">
+  <div>
+    <div className="flex items-center gap-1.5">
+      <p className="text-s font-mono text-blue-400">{s.code}</p>
+      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${TYPE_COLORS[s.type]}`}>
+        {s.type === 'theory' ? 'Theory' :
+         s.type === 'practical' ? 'Theory + Practical' :
+         'Project'}
+      </span>
+    </div>
+    <p className="text-sm text-blue-800">{s.name}</p>
+  </div>
+  {s.groupId && (
+    <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-500">
+      BSc & BCS
+    </span>
+  )}
+</div>
                                   <div className="flex items-center gap-3">
                                     <span className="text-xs font-medium text-blue-500 bg-white px-2 py-0.5 rounded-full">
                                       {s.credits} credits
