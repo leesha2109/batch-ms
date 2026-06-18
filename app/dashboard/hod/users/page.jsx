@@ -34,6 +34,7 @@ export default function UsersPage() {
   const [activeTab, setActiveTab] = useState("");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState("staff"); // "staff" | "student"
   const [editingUser, setEditingUser] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [requestId, setRequestId] = useState(null);
@@ -44,8 +45,9 @@ export default function UsersPage() {
   useEffect(() => {
     const stored = localStorage.getItem("pendingRequest");
     if (stored) {
-      const { name, email, role, studentNumber, requestId } = JSON.parse(stored);
-      setEditingUser({ name, email, role, studentNumber: studentNumber || "" });
+      const { name, email, role, studentId, requestId } = JSON.parse(stored);
+      setEditingUser({ name, email, role, studentId: studentId || "" });
+      setModalMode(role === "student" ? "student" : "staff");
       setRequestId(requestId);
       setShowModal(true);
       localStorage.removeItem("pendingRequest");
@@ -60,12 +62,21 @@ export default function UsersPage() {
 
   function handleEdit(user) {
     setEditingUser(user);
+    setModalMode(user.role === "student" ? "student" : "staff");
     setRequestId(null);
     setShowModal(true);
   }
 
-  function handleAddNew() {
+  function handleAddLecturer() {
     setEditingUser(null);
+    setModalMode("staff");
+    setRequestId(null);
+    setShowModal(true);
+  }
+
+  function handleEnrollStudent() {
+    setEditingUser(null);
+    setModalMode("student");
     setRequestId(null);
     setShowModal(true);
   }
@@ -111,12 +122,20 @@ export default function UsersPage() {
         title="User Management"
         subtitle="Manage all system users and their roles"
         action={
-          <button
-            onClick={handleAddNew}
-            className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700"
-          >
-            + Add user
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleEnrollStudent}
+              className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700"
+            >
+              + Enroll new student
+            </button>
+            <button
+              onClick={handleAddLecturer}
+              className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700"
+            >
+              + Add new lecturer
+            </button>
+          </div>
         }
       />
 
@@ -218,6 +237,7 @@ export default function UsersPage() {
       {showModal && (
         <UserModal
           user={editingUser}
+          mode={modalMode}
           onClose={() => {
             setShowModal(false);
             setEditingUser(null);
