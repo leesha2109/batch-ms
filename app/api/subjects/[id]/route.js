@@ -1,5 +1,5 @@
 import connectDB from '@/lib/mongoose'
-import Subject from '@/models/Subject'
+import Subject from '@/models/Subjects'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/authOptions'
@@ -12,8 +12,9 @@ export async function PATCH(req, { params }) {
     }
 
     await connectDB()
+    const { id } = await params
     const body    = await req.json()
-    const subject = await Subject.findByIdAndUpdate(params.id, body, { new: true })
+    const subject = await Subject.findByIdAndUpdate(id, body, { new: true })
 
     if (!subject) return NextResponse.json(
       { success: false, message: 'Subject not found' }, { status: 404 }
@@ -33,7 +34,8 @@ export async function DELETE(req, { params }) {
     }
 
     await connectDB()
-    await Subject.findByIdAndUpdate(params.id, { isActive: false })
+    const { id } = await params
+    await Subject.findByIdAndUpdate(id, { isActive: false })
 
     return NextResponse.json({ success: true, message: 'Subject deactivated' })
   } catch (error) {
