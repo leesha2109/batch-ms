@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useSubjects } from '@/hooks/useSubjects'
 import { useUsers }    from '@/hooks/useUsers'
 import { useBatches }  from '@/hooks/useBatches'
@@ -248,6 +248,82 @@ function SubjectFormModal({ subject, onClose, onSaved }) {
 }
 
 // ── assign subject modal ──────────────────────────────────────
+// ── assign subject modal ──────────────────────────────────────
+// ── assign subject modal ──────────────────────────────────────
+// ── searchable dropdown (combobox) ──────────────────────────────
+function SearchableSelect({ options, value, onChange, placeholder, emptyMessage }) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const wrapperRef = useRef(null)
+
+  const selected = options.find(o => o.value === value)
+  const filtered = query
+    ? options.filter(o => o.label.toLowerCase().includes(query.toLowerCase()))
+    : options
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setOpen(false)
+        setQuery('')
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm text-left bg-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-900"
+      >
+        <span className={selected ? 'text-blue-900' : 'text-blue-400'}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <span className="text-blue-400 text-xs ml-2">▾</span>
+      </button>
+
+      {open && (
+        <div className="absolute z-20 mt-1 w-full bg-white border border-blue-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+          <div className="p-2 border-b border-blue-100 sticky top-0 bg-white">
+            <input
+              autoFocus
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Type to search..."
+              className="w-full border border-blue-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"
+            />
+          </div>
+          <ul>
+            <li
+              onClick={() => { onChange(''); setOpen(false); setQuery('') }}
+              className="px-3 py-2 text-sm text-blue-400 hover:bg-blue-50 cursor-pointer"
+            >
+              {placeholder}
+            </li>
+            {filtered.length === 0 ? (
+              <li className="px-3 py-2 text-sm text-blue-300">{emptyMessage}</li>
+            ) : filtered.map(o => (
+              <li
+                key={o.value}
+                onClick={() => { onChange(o.value); setOpen(false); setQuery('') }}
+                className={`px-3 py-2 text-sm cursor-pointer hover:bg-blue-50
+                  ${o.value === value ? 'bg-blue-50 text-blue-900 font-medium' : 'text-blue-700'}`}
+              >
+                {o.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── assign subject modal ──────────────────────────────────────
 function AssignModal({ batchId, semesterNumber, year, onClose, onSaved }) {
   const { subjects } = useSubjects()
   const { users: lecturers } = useUsers('lecturer')
@@ -261,8 +337,19 @@ function AssignModal({ batchId, semesterNumber, year, onClose, onSaved }) {
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState('')
 
+  const subjectOptions = subjects.map(s => ({
+    value: s._id,
+    label: `${s.code} — ${s.name} (${s.credits} credits)`
+  }))
+
+  const lecturerOptions = allLecturers.map(l => ({
+    value: l._id,
+    label: `${l.name} (${l.role === 'visiting_lecturer' ? 'Visiting' : 'Permanent'})`
+  }))
+
   async function handleSubmit(e) {
     e.preventDefault(); setError('')
+    if (!form.subjectId) { setError('Please select a subject'); return }
     setLoading(true)
     try {
       const res  = await fetch('/api/subject-assignments', {
@@ -289,33 +376,33 @@ function AssignModal({ batchId, semesterNumber, year, onClose, onSaved }) {
           <button onClick={onClose} className="text-blue-400 text-xl">✕</button>
         </div>
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+
+          {/* Subject searchable dropdown */}
           <div>
-            <label className="text-s text-blue-500 block mb-1">Subject</label>
-            <select name="subjectId" value={form.subjectId} required
-              onChange={e => setForm(p => ({ ...p, subjectId: e.target.value }))}
-              className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900">
-              <option value="">— Select subject —</option>
-              {subjects.map(s => (
-                <option key={s._id} value={s._id}>
-                  {s.code} — {s.name} ({s.credits} credits)
-                </option>
-              ))}
-            </select>
+            <label className="text-s text-blue-500 block mb-1">Select subject</label>
+            <SearchableSelect
+              options={subjectOptions}
+              value={form.subjectId}
+              onChange={(val) => setForm(p => ({ ...p, subjectId: val }))}
+              placeholder="— Select subject —"
+              emptyMessage="No subjects match"
+            />
           </div>
+
+          {/* Lecturer searchable dropdown */}
           <div>
-            <label className="text-s text-blue-500 block mb-1">Assign lecturer (optional)</label>
-            <select name="lecturerId" value={form.lecturerId}
-              onChange={e => setForm(p => ({ ...p, lecturerId: e.target.value }))}
-              className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900">
-              <option value="">— Assign later —</option>
-              {allLecturers.map(l => (
-                <option key={l._id} value={l._id}>
-                  {l.name} ({l.role === 'visiting_lecturer' ? 'Visiting' : 'Permanent'})
-                </option>
-              ))}
-            </select>
+            <label className="text-s text-blue-500 block mb-1">Select lecturer</label>
+            <SearchableSelect
+              options={lecturerOptions}
+              value={form.lecturerId}
+              onChange={(val) => setForm(p => ({ ...p, lecturerId: val }))}
+              placeholder="— Assign later —"
+              emptyMessage="No lecturers match"
+            />
           </div>
+
           {error && <div className="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg">{error}</div>}
+
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose}
               className="flex-1 border border-blue-200 text-blue-600 py-2 rounded-lg text-sm">
@@ -345,7 +432,11 @@ export default function SubjectsPage() {
   const [selSemester,  setSelSemester]  = useState('')
 
   const selBatchObj   = batches.find(b => b._id === selBatch)
-  const semesters     = selBatchObj?.semesters || []
+  const availableSemesters = selBatchObj?.programme === 'BSc'
+  ? [1, 2, 3, 4]
+  : selBatchObj?.programme === 'BCS'
+  ? [1, 2]
+  : []
   const currentYear   = new Date().getFullYear()
 
   const { assignments, refetch: refetchAssignments } =
@@ -506,15 +597,15 @@ export default function SubjectsPage() {
               </select>
 
               <select value={selSemester} onChange={e => setSelSemester(e.target.value)}
-                disabled={!selBatch}
-                className="border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 disabled:opacity-50">
-                <option value="">— Select semester —</option>
-                {semesters.map(s => (
-                  <option key={s._id} value={s.semesterNumber}>
-                    Semester {s.semesterNumber}
-                  </option>
-                ))}
-              </select>
+  disabled={!selBatch}
+  className="border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 disabled:opacity-50">
+  <option value="">— Select semester —</option>
+  {availableSemesters.map(num => (
+    <option key={num} value={num}>
+      Semester {num}
+    </option>
+  ))}
+</select>
 
               {selBatch && selSemester && (
                 <button onClick={() => setShowAssign(true)}
