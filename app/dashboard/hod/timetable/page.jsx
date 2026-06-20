@@ -217,8 +217,8 @@ export default function TimetablePage() {
             <button onClick={handleSaveTimetable} disabled={saving}
               className={`ml-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors
                 ${saved
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-900 text-white hover:bg-gray-700'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-blue-900 text-white hover:bg-gray-700'
                 } disabled:opacity-50`}>
               {saving ? 'Saving...' : saved ? '✓ Saved!' : 'Save timetable'}
             </button>
