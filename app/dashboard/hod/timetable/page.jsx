@@ -100,7 +100,11 @@ export default function TimetablePage() {
   const [saved,       setSaved]       = useState(false)
 
   const selBatchObj = batches.find(b => b._id === selBatch)
-  const semesters   = selBatchObj?.semesters || []
+  const semesters   = selBatchObj?.programme === 'BSc'
+    ? [1, 2, 3, 4]
+    : selBatchObj?.programme === 'BCS'
+    ? [1, 2]
+    : []
   const currentYear = new Date().getFullYear()
 
   const { assignments } = useAssignments(
@@ -206,9 +210,9 @@ export default function TimetablePage() {
             disabled={!selBatch}
             className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 disabled:opacity-50">
             <option value="">— Select semester —</option>
-            {semesters.map(s => (
-              <option key={s._id} value={s.semesterNumber}>
-                Semester {s.semesterNumber}
+            {semesters.map(num => (
+              <option key={num} value={num}>
+                Semester {num}
               </option>
             ))}
           </select>
@@ -262,17 +266,32 @@ export default function TimetablePage() {
                           {time}
                         </td>
                         {DAYS.map(day => {
-                          const slot       = getSlot(day, time)
+                          // Skip rendering this cell if it's covered by a previous row's rowSpan
+                          const isCovered = slots.some(s =>
+                            s.day === day &&
+                            TIMES.indexOf(s.startTime) < ti &&
+                            TIMES.indexOf(s.endTime)   > ti
+                          )
+                          if (isCovered) return null
+
+                          const slot = getSlot(day, time)
                           const assignment = slot ? getAssignment(slot) : null
-                          const color      = assignment ? colorMap[assignment._id] : ''
+                          const color = assignment ? colorMap[assignment._id] : ''
+
+                          // How many hour-rows this slot spans
+                          const span = slot
+                            ? Math.max(1, TIMES.indexOf(slot.endTime) - TIMES.indexOf(slot.startTime))
+                            : 1
 
                           return (
                             <td key={day}
+                              rowSpan={span}
                               onClick={() => handleCellClick(day, time)}
-                              className="px-2 py-1.5 border border-gray-50 cursor-pointer hover:bg-blue-50 transition-colors text-center min-w-27.5">
+                              className="px-2 py-1.5 border border-gray-50 cursor-pointer hover:bg-blue-50 transition-colors text-center min-w-27.5 align-top">
                               {assignment ? (
-                                <div className={`rounded-lg px-2 py-1.5 text-xs ${color}`}>
+                                <div className={`rounded-lg px-2 py-1.5 text-xs h-full flex flex-col justify-center ${color}`}>
                                   <div className="font-medium">{assignment.subjectId?.code}</div>
+                                  <div className="opacity-60 text-[10px]">{slot.startTime}–{slot.endTime}</div>
                                   {slot.location && (
                                     <div className="opacity-70 text-xs">{slot.location}</div>
                                   )}
