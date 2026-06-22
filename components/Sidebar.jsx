@@ -10,7 +10,7 @@ const hodLinks = [
   { label: "Users", href: "/dashboard/hod/users", icon: "👥" },
   { label: "Timetable", href: "/dashboard/hod/timetable", icon: "📅" },
   { label: "Courses", href: "/dashboard/hod/subjects", icon: "📚" },
-  { label: "Marks", href: "/dashboard/hod/marks", icon: "📝" },
+  { label: "Marks", href: "/dashboard/hod/marks", icon: "📊" },
   { label: "Exams", href: "/dashboard/hod/exams", icon: "📝" },
   { label: "Projects", href: "/dashboard/hod/projects", icon: "🔬" },
   { label: "Lecturers", href: "/dashboard/hod/lecturers", icon: "👨‍🏫" },
