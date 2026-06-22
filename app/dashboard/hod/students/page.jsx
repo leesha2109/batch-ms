@@ -299,19 +299,19 @@ export default function StudentsPage() {
 
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="bg-gray-50 rounded-xl p-4">
-            <p className="text-xs text-gray-400 mb-1">Total students</p>
+          <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+            <p className="text-xs text-blue-500 mb-1">Total students</p>
             <p className="text-2xl font-semibold text-gray-800">{students.length}</p>
           </div>
-          <div className="bg-green-50 rounded-xl p-4">
-            <p className="text-xs text-gray-400 mb-1">Active</p>
-            <p className="text-2xl font-semibold text-gray-800">
+          <div className="bg-green-50 rounded-xl p-4 border border-green-100">
+            <p className="text-xs text-green-600 mb-1">Active</p>
+            <p className="text-2xl font-semibold text-green-900">
               {students.filter(s => s.isActive).length}
             </p>
           </div>
-          <div className="bg-red-50 rounded-xl p-4">
-            <p className="text-xs text-gray-400 mb-1">Inactive</p>
-            <p className="text-2xl font-semibold text-gray-800">
+          <div className="bg-red-50 rounded-xl p-4 border border-red-100">
+            <p className="text-xs text-red-600 mb-1">Inactive</p>
+            <p className="text-2xl font-semibold text-red-900">
               {students.filter(s => !s.isActive).length}
             </p>
           </div>
