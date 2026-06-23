@@ -19,7 +19,7 @@ const COLORS  = [
 function SlotModal({ slot, assignments, onClose, onSave }) {
   const [form, setForm] = useState({
     subjectAssignmentId: slot?.subjectAssignmentId?._id || slot?.subjectAssignmentId || '',
-    location:            slot?.location || '',
+    location:            slot?.location  || '',
     startTime:           slot?.startTime || '',
     endTime:             slot?.endTime   || '',
   })
@@ -27,58 +27,59 @@ function SlotModal({ slot, assignments, onClose, onSave }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-sm shadow-xl">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-blue-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-base font-semibold">Edit slot</h2>
-          <button onClick={onClose} className="text-blue-400 text-xl">✕</button>
+          <button onClick={onClose} className="text-gray-400 text-xl">✕</button>
         </div>
         <div className="px-6 py-5 space-y-4">
           <div>
-            <label className="text-xs text-blue-500 block mb-1">Subject</label>
+            <label className="text-xs text-gray-500 block mb-1">Subject</label>
             <select value={form.subjectAssignmentId}
               onChange={e => setForm(p => ({ ...p, subjectAssignmentId: e.target.value }))}
-              className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900">
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
               <option value="">— Select subject —</option>
               {assignments.map(a => (
                 <option key={a._id} value={a._id}>
                   {a.subjectId?.code} — {a.subjectId?.name}
+                  {a.lecturerId?.name ? ` (${a.lecturerId.name})` : ''}
                 </option>
               ))}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-blue-500 block mb-1">Start time</label>
+              <label className="text-xs text-gray-500 block mb-1">Start time</label>
               <select value={form.startTime}
                 onChange={e => setForm(p => ({ ...p, startTime: e.target.value }))}
-                className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900">
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
                 <option value="">—</option>
                 {TIMES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs text-blue-500 block mb-1">End time</label>
+              <label className="text-xs text-gray-500 block mb-1">End time</label>
               <select value={form.endTime}
                 onChange={e => setForm(p => ({ ...p, endTime: e.target.value }))}
-                className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900">
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
                 <option value="">—</option>
                 {TIMES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className="text-xs text-blue-500 block mb-1">Location (room / lab)</label>
+            <label className="text-xs text-gray-500 block mb-1">Location (room / lab)</label>
             <input value={form.location}
               onChange={e => setForm(p => ({ ...p, location: e.target.value }))}
               placeholder="e.g. Lab 01"
-              className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"/>
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"/>
           </div>
           <div className="flex gap-3 pt-2">
             <button onClick={onClose}
-              className="flex-1 border border-blue-200 text-blue-600 py-2 rounded-lg text-sm">
+              className="flex-1 border border-gray-200 text-gray-600 py-2 rounded-lg text-sm">
               Cancel
             </button>
             <button onClick={() => onSave(form)}
-              className="flex-1 bg-blue-900 text-white py-2 rounded-lg text-sm">
+              className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-sm">
               Save slot
             </button>
           </div>
@@ -123,7 +124,13 @@ export default function TimetablePage() {
       .then(d => {
         if (d.success && d.timetable) {
           setTimetable(d.timetable)
-          setSlots(d.timetable.slots || [])
+          // normalize slots — extract IDs from populated objects
+          const normalized = (d.timetable.slots || []).map(s => ({
+            ...s,
+            subjectAssignmentId:
+              s.subjectAssignmentId?._id || s.subjectAssignmentId,
+          }))
+          setSlots(normalized)
         } else {
           setTimetable(null)
           setSlots([])
@@ -139,7 +146,9 @@ export default function TimetablePage() {
     const id = slotOrId?.subjectAssignmentId?._id ||
                slotOrId?.subjectAssignmentId      ||
                slotOrId
-    return assignments.find(a => a._id === id || a._id?.toString() === id?.toString())
+    return assignments.find(
+      a => a._id === id || a._id?.toString() === id?.toString()
+    )
   }
 
   function handleCellClick(day, time) {
@@ -150,19 +159,17 @@ export default function TimetablePage() {
 
   function handleSaveSlot(form) {
     setSlots(prev => {
-      // remove old slot for this day+time
       const filtered = prev.filter(
         s => !(s.day === editingDay && s.startTime === editingSlot.startTime)
       )
-      if (!form.subjectAssignmentId) return filtered   // clearing the slot
+      if (!form.subjectAssignmentId) return filtered
 
       return [...filtered, {
-        _id:                  editingSlot._id || `new-${Date.now()}`,
-        day:                  editingDay,
-        startTime:            form.startTime || editingSlot.startTime,
-        endTime:              form.endTime,
-        subjectAssignmentId:  form.subjectAssignmentId,
-        location:             form.location,
+        day:                 editingDay,
+        startTime:           form.startTime || editingSlot.startTime,
+        endTime:             form.endTime,
+        subjectAssignmentId: form.subjectAssignmentId, // always a plain ID string
+        location:            form.location,
       }]
     })
     setEditingSlot(null)
@@ -171,6 +178,16 @@ export default function TimetablePage() {
 
   async function handleSaveTimetable() {
     setSaving(true)
+
+    // Clean slots — only send plain IDs, no temp _id fields
+    const cleanSlots = slots.map(s => ({
+      day:                 s.day,
+      startTime:           s.startTime,
+      endTime:             s.endTime,
+      location:            s.location || '',
+      subjectAssignmentId: s.subjectAssignmentId?._id || s.subjectAssignmentId,
+    }))
+
     const res = await fetch('/api/timetable', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -178,16 +195,67 @@ export default function TimetablePage() {
         batchId:        selBatch,
         semesterNumber: Number(selSemester),
         year:           currentYear,
-        slots
+        slots:          cleanSlots,   // ← clean data, no temp IDs
       })
     })
     const data = await res.json()
     if (data.success) {
+      // Reload from server so slots get real MongoDB _ids
+      fetch(`/api/timetable?batchId=${selBatch}&semesterNumber=${selSemester}&year=${currentYear}`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.success && d.timetable) {
+            const normalized = (d.timetable.slots || []).map(s => ({
+              ...s,
+              subjectAssignmentId:
+                s.subjectAssignmentId?._id || s.subjectAssignmentId,
+            }))
+            setSlots(normalized)
+          }
+        })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     }
     setSaving(false)
   }
+
+  // Merge consecutive slots with the same subject on the same day
+  function getMergedSlots() {
+    const merged = []
+    const used = new Set()
+
+    slots.forEach(slot => {
+      if (used.has(`${slot.day}-${slot.startTime}`)) return
+
+      let endTime = slot.endTime
+      let next = slots.find(
+        s =>
+          s.day === slot.day &&
+          s.startTime === endTime &&
+          (s.subjectAssignmentId?._id || s.subjectAssignmentId) ===
+            (slot.subjectAssignmentId?._id || slot.subjectAssignmentId)
+      )
+
+      while (next) {
+        used.add(`${next.day}-${next.startTime}`)
+        endTime = next.endTime
+        next = slots.find(
+          s =>
+            s.day === slot.day &&
+            s.startTime === endTime &&
+            (s.subjectAssignmentId?._id || s.subjectAssignmentId) ===
+              (slot.subjectAssignmentId?._id || slot.subjectAssignmentId)
+        )
+      }
+
+      used.add(`${slot.day}-${slot.startTime}`)
+      merged.push({ ...slot, endTime })
+    })
+
+    return merged
+  }
+
+  const mergedSlots = getMergedSlots()
 
   return (
     <div>
@@ -200,20 +268,21 @@ export default function TimetablePage() {
 
         {/* Controls */}
         <div className="flex gap-3 mb-6 flex-wrap items-center">
-          <select value={selBatch} onChange={e => { setSelBatch(e.target.value); setSelSemester('') }}
-            className="border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900">
+          <select value={selBatch}
+            onChange={e => { setSelBatch(e.target.value); setSelSemester('') }}
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
             <option value="">— Select batch —</option>
-            {batches.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
+            {batches.map(b => (
+              <option key={b._id} value={b._id}>{b.name}</option>
+            ))}
           </select>
 
           <select value={selSemester} onChange={e => setSelSemester(e.target.value)}
             disabled={!selBatch}
-            className="border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 disabled:opacity-50">
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 disabled:opacity-50">
             <option value="">— Select semester —</option>
             {semesters.map(num => (
-              <option key={num} value={num}>
-                Semester {num}
-              </option>
+              <option key={num} value={num}>Semester {num}</option>
             ))}
           </select>
 
@@ -221,8 +290,8 @@ export default function TimetablePage() {
             <button onClick={handleSaveTimetable} disabled={saving}
               className={`ml-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors
                 ${saved
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-blue-900 text-white hover:bg-blue-700'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-blue-900 text-white hover:bg-blue-800'
                 } disabled:opacity-50`}>
               {saving ? 'Saving...' : saved ? '✓ Saved!' : 'Save timetable'}
             </button>
@@ -238,22 +307,24 @@ export default function TimetablePage() {
                   <span key={a._id}
                     className={`text-xs px-2 py-1 rounded-full font-medium ${colorMap[a._id]}`}>
                     {a.subjectId?.code} — {a.subjectId?.name}
+                    {a.lecturerId?.name ? ` · ${a.lecturerId.name}` : ''}
                   </span>
                 ))}
               </div>
             )}
 
             {/* Grid */}
-            <div className="bg-white border border-blue-100 rounded-xl overflow-hidden">
+            <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   <thead>
-                    <tr className="bg-blue-50">
-                      <th className="px-4 py-3 text-xs text-blue-400 font-medium text-left w-20 border-b border-blue-100">
+                    <tr className="bg-gray-50">
+                      <th className="px-4 py-3 text-xs text-gray-400 font-medium text-left w-20 border-b border-gray-100">
                         Time
                       </th>
                       {DAYS.map(d => (
-                        <th key={d} className="px-3 py-3 text-xs text-blue-500 font-medium border-b border-blue-100 text-center">
+                        <th key={d}
+                          className="px-3 py-3 text-xs text-gray-500 font-medium border-b border-gray-100 text-center">
                           {d}
                         </th>
                       ))}
@@ -261,43 +332,58 @@ export default function TimetablePage() {
                   </thead>
                   <tbody>
                     {TIMES.map((time, ti) => (
-                      <tr key={time} className={ti % 2 === 0 ? 'bg-white' : 'bg-blue-50/50'}>
-                        <td className="px-4 py-2 text-xs text-blue-400 border-r border-blue-100 whitespace-nowrap">
+                      <tr key={time}
+                        className={ti % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+                        <td className="px-4 py-2 text-xs text-gray-400 border-r border-gray-100 whitespace-nowrap">
                           {time}
                         </td>
                         {DAYS.map(day => {
-                          // Skip rendering this cell if it's covered by a previous row's rowSpan
-                          const isCovered = slots.some(s =>
+                          // Skip if covered by a merged slot above
+                          const isCovered = mergedSlots.some(s =>
                             s.day === day &&
                             TIMES.indexOf(s.startTime) < ti &&
                             TIMES.indexOf(s.endTime)   > ti
                           )
                           if (isCovered) return null
 
-                          const slot = getSlot(day, time)
+                          const slot = mergedSlots.find(
+                            s => s.day === day && s.startTime === time
+                          )
                           const assignment = slot ? getAssignment(slot) : null
                           const color = assignment ? colorMap[assignment._id] : ''
 
-                          // How many hour-rows this slot spans
                           const span = slot
-                            ? Math.max(1, TIMES.indexOf(slot.endTime) - TIMES.indexOf(slot.startTime))
+                            ? Math.max(
+                                1,
+                                TIMES.indexOf(slot.endTime) -
+                                TIMES.indexOf(slot.startTime)
+                              )
                             : 1
 
                           return (
                             <td key={day}
                               rowSpan={span}
                               onClick={() => handleCellClick(day, time)}
-                              className="px-2 py-1.5 border border-blue-50 cursor-pointer hover:bg-blue-50 transition-colors text-center min-w-27.5 align-top">
+                              className="px-2 py-1.5 border border-gray-50 cursor-pointer hover:bg-blue-50 transition-colors text-center align-top">
                               {assignment ? (
-                                <div className={`rounded-lg px-2 py-1.5 text-xs h-full flex flex-col justify-center ${color}`}>
-                                  <div className="font-medium">{assignment.subjectId?.code}</div>
-                                  <div className="opacity-60 text-[10px]">{slot.startTime}–{slot.endTime}</div>
+                                <div className={`rounded-lg px-2 py-1.5 text-xs h-full flex flex-col justify-center gap-0.5 ${color}`}>
+                                  <div className="font-semibold">{assignment.subjectId?.code}</div>
+                                  <div className="opacity-70 text-[10px]">
+                                    {slot.startTime}–{slot.endTime}
+                                  </div>
+                                  {assignment.lecturerId?.name && (
+                                    <div className="opacity-80 text-[10px] font-medium">
+                                      {assignment.lecturerId.name}
+                                    </div>
+                                  )}
                                   {slot.location && (
-                                    <div className="opacity-70 text-xs">{slot.location}</div>
+                                    <div className="opacity-60 text-[10px]">
+                                      {slot.location}
+                                    </div>
                                   )}
                                 </div>
                               ) : (
-                                <span className="text-blue-200 text-xs hover:text-blue-400">+</span>
+                                <span className="text-gray-200 text-xs hover:text-gray-400">+</span>
                               )}
                             </td>
                           )
@@ -309,14 +395,16 @@ export default function TimetablePage() {
               </div>
             </div>
 
-            <p className="text-xs text-blue-400 mt-3">
+            <p className="text-xs text-gray-400 mt-3">
               Click any cell to assign a subject. Click an assigned cell to change or clear it.
             </p>
           </>
         ) : (
-          <div className="bg-white border border-dashed border-blue-200 rounded-xl p-12 text-center">
+          <div className="bg-white border border-dashed border-gray-200 rounded-xl p-12 text-center">
             <p className="text-3xl mb-3">📅</p>
-            <p className="text-sm text-blue-400">Select a batch and semester to view the timetable</p>
+            <p className="text-sm text-gray-400">
+              Select a batch and semester to view the timetable
+            </p>
           </div>
         )}
       </div>
