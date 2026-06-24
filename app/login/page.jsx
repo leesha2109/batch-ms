@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -65,18 +66,40 @@ export default function LoginPage() {
         }}
       >
         {/* Header with Logo */}
-        <div style={{ marginBottom: '24px' }}>
-          <h1 style={{
-            fontSize: '28px',
-            fontWeight: '600',
-            color: '#fff',
-            margin: 0,
-            letterSpacing: '0.5px'
-          }}>
-            Batch<span style={{ color: '#FFE566' }}>MS</span>
-          </h1>
-        </div>
+        <div
+  style={{
+    marginBottom: '24px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  }}
+>
+  <h1
+    style={{
+      fontSize: '32px',
+      fontWeight: '700',
+      color: '#fff',
+      margin: 0,
+      letterSpacing: '0.5px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+    }}
+  >
+    Batch<span style={{ color: '#FFE566' }}>MS</span>
+  </h1>
 
+  <Image
+    src="/bms.png"
+    alt="BMS Logo"
+    width={100}
+    height={100}
+    priority
+    style={{
+      objectFit: "contain",
+    }}
+  />
+</div>
         {/* Subtitle */}
         <p style={{
           color: 'rgba(255, 255, 255, 0.75)',

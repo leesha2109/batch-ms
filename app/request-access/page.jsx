@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 export default function RequestAccessPage() {
   const router = useRouter()
@@ -75,17 +76,40 @@ export default function RequestAccessPage() {
           boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
         }}
       >
-        {/* Header */}
-        <div style={{ marginBottom: '24px' }}>
-          <h1 style={{
-            fontSize: '28px',
-            fontWeight: '600',
-            color: '#fff',
-            margin: 0,
-            letterSpacing: '0.5px'
-          }}>
-            Request <span style={{ color: '#FFE566' }}>Access</span>
+        {/* Header with Logo */}
+        <div
+          style={{
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <h1
+            style={{
+              fontSize: '32px',
+              fontWeight: '700',
+              color: '#fff',
+              margin: 0,
+              letterSpacing: '0.5px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            Request<span style={{ color: '#FFE566' }}>Access</span>
           </h1>
+
+          <Image
+            src="/bms.png"
+            alt="BMS Logo"
+            width={100}
+            height={100}
+            priority
+            style={{
+              objectFit: "contain",
+            }}
+          />
         </div>
 
         {/* Subtitle */}
