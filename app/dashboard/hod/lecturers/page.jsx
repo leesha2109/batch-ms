@@ -214,7 +214,7 @@ export default function LecturersPage() {
         subtitle="Manage permanent and visiting lecturers"
         action={
           <button onClick={handleAddLecturer}
-            className="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-800 transition-colors">
+            className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors">
             + Add new lecturer
           </button>
         }
