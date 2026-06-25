@@ -12,9 +12,10 @@ export async function PATCH(req, { params }) {
     }
 
     await connectDB()
+    const { id } = await params   // ← await params before destructuring
     const body       = await req.json()
     const assignment = await SubjectAssignment.findByIdAndUpdate(
-      params.id, body, { new: true }
+      id, body, { returnDocument: 'after' }   // also fixes the `new` deprecation warning
     ).populate([
       { path: 'subjectId',  select: 'code name credits type' },
       { path: 'lecturerId', select: 'name email role' }
@@ -34,7 +35,8 @@ export async function DELETE(req, { params }) {
     }
 
     await connectDB()
-    await SubjectAssignment.findByIdAndDelete(params.id)
+    const { id } = await params   // ← same fix here
+    await SubjectAssignment.findByIdAndDelete(id)
     return NextResponse.json({ success: true, message: 'Assignment removed' })
   } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 })
