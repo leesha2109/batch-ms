@@ -18,6 +18,13 @@ const PROG_COLORS = {
   BCS:  'bg-orange-100 text-orange-700',
 }
 
+// Distinct background only for the "Level · Semester" header bar — one per combo
+// Distinct background only for the "Level · Semester" header bar — one per level
+const LEVEL_SEM_STYLES = {
+  1: { header: 'bg-blue-800',   text: 'text-white',   pill: 'bg-white text-blue-600' },
+  2: { header: 'bg-purple-800', text: 'text-white', pill: 'bg-white text-purple-600' },
+}
+
 // ── inline modal ──────────────────────────────────────────────
 function SubjectFormModal({ subject, onClose, onSaved }) {
   const isEditing = !!subject
@@ -247,9 +254,6 @@ function SubjectFormModal({ subject, onClose, onSaved }) {
   )
 }
 
-// ── assign subject modal ──────────────────────────────────────
-// ── assign subject modal ──────────────────────────────────────
-// ── assign subject modal ──────────────────────────────────────
 // ── searchable dropdown (combobox) ──────────────────────────────
 function SearchableSelect({ options, value, onChange, placeholder, emptyMessage }) {
   const [open, setOpen] = useState(false)
@@ -470,7 +474,7 @@ export default function SubjectsPage() {
 
         <div className="flex gap-0 border-b border-blue-100 mb-6">
           {[
-            { key: 'pool',     label: 'Subject Pool' },
+            { key: 'pool',     label: 'Courses Pool' },
             { key: 'assigned', label: 'Lecturer Assignments' },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
@@ -525,14 +529,15 @@ export default function SubjectsPage() {
                         const [level, semester] = key.split('-')
                         const subs = grouped[key]
                         const totalCredits = subs.reduce((sum, s) => sum + (s.credits || 0), 0)
+                        const headerStyle = LEVEL_SEM_STYLES[level] || LEVEL_SEM_STYLES[1]
 
                         return (
-                          <div key={key} className="bg-blue-50 rounded-xl border border-blue-100 p-4">
-                            <div className="flex items-center justify-between mb-3 pb-2 border-b border-blue-100">
-                              <p className="text-sm font-medium text-blue-700">
+                          <div key={key} className="bg-blue-50 rounded-xl border border-blue-200 p-4">
+                            <div className={`flex items-center justify-between mb-3 px-3 py-2 rounded-lg ${headerStyle.header}`}>
+                              <p className={`text-sm font-medium ${headerStyle.text}`}>
                                 Level {level} · Semester {semester}
                               </p>
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 font-medium">
+                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${headerStyle.pill}`}>
                                 {totalCredits} credits
                               </span>
                             </div>
