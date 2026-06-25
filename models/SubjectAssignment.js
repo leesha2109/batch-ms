@@ -23,6 +23,14 @@ const SubjectAssignmentSchema = new mongoose.Schema({
   year: {
     type: Number,
     required: true  // e.g. 2024
+  },
+  examHeld: {
+    type: Boolean,
+    default: false
+  },
+  resultsReleased: {
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true })
 
