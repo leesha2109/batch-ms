@@ -11,6 +11,7 @@ const hodLinks = [
   { label: "Batches", href: "/dashboard/hod/batches", icon: "🎓" },
   { label: "Timetable", href: "/dashboard/hod/timetable", icon: "📅" },
   { label: "Courses", href: "/dashboard/hod/subjects", icon: "📚" },
+  {label: "Lecture Hours", href: "/dashboard/hod/lecture-hours", icon: "🕐" },
   { label: "Marks", href: "/dashboard/hod/marks", icon: "📊" },
   { label: "Exams", href: "/dashboard/hod/exams", icon: "📝" },
   { label: "Projects", href: "/dashboard/hod/projects", icon: "🔬" },
@@ -29,6 +30,7 @@ const coordinatorLinks = [
   { label: "My Batches", href: "/dashboard/coordinator/batches", icon: "🎓" },
   { label: "Timetable", href: "/dashboard/coordinator/timetable", icon: "📅" },
   { label: "Subjects", href: "/dashboard/coordinator/subjects", icon: "📚" },
+  { label: "Lecture Hours", href: "/dashboard/coordinator/lecture-hours", icon: "🕐" },
   { label: "Marks", href: "/dashboard/coordinator/marks", icon: "📝" },
   { label: "Projects", href: "/dashboard/coordinator/projects", icon: "🔬" },
   { section: "People" },
@@ -42,12 +44,15 @@ const lecturerLinks = [
   { label: "Dashboard", href: "/dashboard/lecturer", icon: "🏠" },
   { label: "My Subjects", href: "/dashboard/lecturer/subjects", icon: "📚" },
   { label: "Marks", href: "/dashboard/lecturer/marks", icon: "📝" },
+  { label: "Lecture Hours", href: "/dashboard/lecturer/lecture-hours", icon: "🕐" },
+ 
 ];
 
 const studentLinks = [
   { label: "Dashboard", href: "/dashboard/student", icon: "🏠" },
   { label: "My Marks", href: "/dashboard/student/marks", icon: "📝" },
   { label: "Subjects", href: "/dashboard/student/subjects", icon: "📚" },
+  { label: "Lecture Hours", href: "/dashboard/student/lecture-hours", icon: "🕐" },
   { label: "Projects", href: "/dashboard/student/projects", icon: "🔬" },
   { label: "Transcript", href: "/dashboard/student/transcript", icon: "📄" },
 ];
@@ -98,7 +103,7 @@ export default function Sidebar() {
               BMS
             </p>
             <p className="text-[11px] text-blue-300/80 leading-tight font-medium">
-              Batch Management
+              Batch Management system
             </p>
           </div>
         </div>
