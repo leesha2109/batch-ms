@@ -30,9 +30,21 @@ export async function GET(req) {
         { email: { $regex: search, $options: "i" } },
       ];
 
-    const users = await User.find(query)
-      .select("-password") // never return passwords
-      .sort({ createdAt: -1 });
+    let users = [];
+    try {
+      users = await User.find(query)
+        .select("-password")
+        .sort({ createdAt: -1 })
+        .populate({
+          path: "coordinatorId",
+          select: "name email role",
+          options: { strictPopulate: false },
+        });
+    } catch {
+      users = await User.find(query)
+        .select("-password")
+        .sort({ createdAt: -1 });
+    }
 
     return NextResponse.json({ success: true, users });
   } catch (error) {
@@ -57,7 +69,7 @@ export async function POST(req) {
     await connectDB();
 
     const body = await req.json();
-    const { name, email, password, role, batchId } = body;
+    const { name, email, password, role, batchId, coordinatorId } = body;
 
     // validation
     if (!name || !email || !password || !role) {
@@ -87,11 +99,24 @@ export async function POST(req) {
       password: hashedPassword,
       role,
       batchId: batchId || null,
+      coordinatorId: coordinatorId || null,
       isActive: true,
     });
 
-    // return user without password
-    const { password: _, ...userWithoutPassword } = user.toObject();
+    let populatedUser = null;
+    try {
+      populatedUser = await User.findById(user._id)
+        .populate({
+          path: "coordinatorId",
+          select: "name email role",
+          options: { strictPopulate: false },
+        })
+        .select("-password");
+    } catch {
+      populatedUser = await User.findById(user._id).select("-password");
+    }
+
+    const userWithoutPassword = populatedUser.toObject();
 
     return NextResponse.json(
       {
