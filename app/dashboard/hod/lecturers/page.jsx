@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import UserModal from '@/components/UserModal'
 import TopHeader from '@/components/TopHeader'
+import { useUsers } from '@/hooks/useUsers'
 
 const TYPE_TABS = [
   { label: 'All',                value: '' },
@@ -11,10 +12,12 @@ const TYPE_TABS = [
 ]
 
 function LecturerProfile({ lecturer, onClose, onUpdate }) {
+  const { users: lecturers } = useUsers('lecturer')
   const [editing, setEditing] = useState(false)
   const [form,    setForm]    = useState({
     name:     lecturer.name,
     isActive: lecturer.isActive,
+    coordinatorId: lecturer.coordinatorId?._id || lecturer.coordinatorId || '',
   })
   const [saving, setSaving] = useState(false)
 
@@ -24,7 +27,10 @@ function LecturerProfile({ lecturer, onClose, onUpdate }) {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify(form)
+      body: JSON.stringify({
+        ...form,
+        coordinatorId: form.coordinatorId || null,
+      })
     })
     const data = await res.json()
     if (data.success) { onUpdate(); setEditing(false) }
@@ -70,6 +76,16 @@ function LecturerProfile({ lecturer, onClose, onUpdate }) {
                   {lecturer.role === 'visiting_lecturer' ? 'Visiting' : 'Permanent'}
                 </p>
               </div>
+              {lecturer.role === 'visiting_lecturer' && (
+                <div className="bg-gray-50 rounded-lg p-3 col-span-2">
+                  <p className="text-xs text-gray-400 mb-1">University coordinator</p>
+                  <p className="text-sm font-medium text-gray-700">
+                    {lecturer.coordinatorId?.name
+                      ? `${lecturer.coordinatorId.name}${lecturer.coordinatorId.email ? ` (${lecturer.coordinatorId.email})` : ''}`
+                      : '— Not assigned'}
+                  </p>
+                </div>
+              )}
               <div className="bg-gray-50 rounded-lg p-3 col-span-2">
                 <p className="text-xs text-gray-400 mb-1">Joined</p>
                 <p className="text-sm font-medium text-gray-700">
@@ -87,6 +103,23 @@ function LecturerProfile({ lecturer, onClose, onUpdate }) {
                   <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"/>
                 </div>
+                {lecturer.role === 'visiting_lecturer' && (
+                  <div>
+                    <label className="text-xs text-gray-500 block mb-1">University coordinator</label>
+                    <select
+                      value={form.coordinatorId}
+                      onChange={e => setForm(p => ({ ...p, coordinatorId: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    >
+                      <option value="">— Select coordinator —</option>
+                      {lecturers.map((option) => (
+                        <option key={option._id} value={option._id}>
+                          {option.name} ({option.email})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div className="flex items-center gap-2">
                   <input type="checkbox" id="activeCheck" checked={form.isActive}
                     onChange={e => setForm(p => ({ ...p, isActive: e.target.checked }))}
@@ -169,7 +202,15 @@ export default function LecturersPage() {
     }
   }
 
-  useEffect(() => { fetchLecturers(activeTab, search) }, [activeTab])
+  useEffect(() => {
+    let active = true;
+    fetchLecturers(activeTab, search).finally(() => {
+      if (active) {
+        setLoading(false);
+      }
+    });
+    return () => { active = false; };
+  }, [activeTab, search])
 
   function handleSearch(e) {
     setSearch(e.target.value)
@@ -225,9 +266,6 @@ export default function LecturersPage() {
         {/* Type tabs */}
         <div className="flex gap-2 mb-6 bg-blue-50/60 border border-blue-100 rounded-xl p-1.5 w-fit">
           {TYPE_TABS.map(tab => {
-            const count = tab.value
-              ? lecturers.filter(l => l.role === tab.value).length
-              : lecturers.length
             const isActive = activeTab === tab.value
 
             return (
@@ -237,7 +275,6 @@ export default function LecturersPage() {
                     ? 'bg-blue-900 text-white shadow-sm'
                     : 'text-blue-700 hover:bg-blue-100'}`}>
                 {tab.label}
-                
               </button>
             )
           })}
@@ -300,6 +337,11 @@ export default function LecturersPage() {
                         <div>
                           <p className="font-medium text-gray-800">{l.name}</p>
                           <p className="text-xs text-gray-400">{l.email}</p>
+                          {l.role === 'visiting_lecturer' && (
+                            <p className="text-[11px] text-gray-500 mt-0.5">
+                              Coordinator: {l.coordinatorId?.name || '—'}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </td>
