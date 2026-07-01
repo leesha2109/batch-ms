@@ -11,7 +11,7 @@ const hodLinks = [
   { label: "Batches", href: "/dashboard/hod/batches", icon: "🎓" },
   { label: "Timetable", href: "/dashboard/hod/timetable", icon: "📅" },
   { label: "Courses", href: "/dashboard/hod/subjects", icon: "📚" },
-  {label: "Lecture Hours", href: "/dashboard/hod/lecture-hours", icon: "🕐" },
+  { label: "Lecture Hours", href: "/dashboard/hod/lecture-hours", icon: "🕐" },
   { label: "Marks", href: "/dashboard/hod/marks", icon: "📊" },
   { label: "Exams", href: "/dashboard/hod/exams", icon: "📝" },
   { label: "Projects", href: "/dashboard/hod/projects", icon: "🔬" },
@@ -30,7 +30,11 @@ const coordinatorLinks = [
   { label: "My Batches", href: "/dashboard/coordinator/batches", icon: "🎓" },
   { label: "Timetable", href: "/dashboard/coordinator/timetable", icon: "📅" },
   { label: "Subjects", href: "/dashboard/coordinator/subjects", icon: "📚" },
-  { label: "Lecture Hours", href: "/dashboard/coordinator/lecture-hours", icon: "🕐" },
+  {
+    label: "Lecture Hours",
+    href: "/dashboard/coordinator/lecture-hours",
+    icon: "🕐",
+  },
   { label: "Marks", href: "/dashboard/coordinator/marks", icon: "📝" },
   { label: "Projects", href: "/dashboard/coordinator/projects", icon: "🔬" },
   { section: "People" },
@@ -44,15 +48,22 @@ const lecturerLinks = [
   { label: "Dashboard", href: "/dashboard/lecturer", icon: "🏠" },
   { label: "My Subjects", href: "/dashboard/lecturer/subjects", icon: "📚" },
   { label: "Marks", href: "/dashboard/lecturer/marks", icon: "📝" },
-  { label: "Lecture Hours", href: "/dashboard/lecturer/lecture-hours", icon: "🕐" },
- 
+  {
+    label: "Lecture Hours",
+    href: "/dashboard/lecturer/lecture-hours",
+    icon: "🕐",
+  },
 ];
 
 const studentLinks = [
   { label: "Dashboard", href: "/dashboard/student", icon: "🏠" },
   { label: "My Marks", href: "/dashboard/student/marks", icon: "📝" },
   { label: "Subjects", href: "/dashboard/student/subjects", icon: "📚" },
-  { label: "Lecture Hours", href: "/dashboard/student/lecture-hours", icon: "🕐" },
+  {
+    label: "Lecture Hours",
+    href: "/dashboard/student/lecture-hours",
+    icon: "🕐",
+  },
   { label: "Projects", href: "/dashboard/student/projects", icon: "🔬" },
   { label: "Transcript", href: "/dashboard/student/transcript", icon: "📄" },
 ];
@@ -81,7 +92,7 @@ export default function Sidebar() {
   const initial = session?.user?.name?.charAt(0)?.toUpperCase() || "?";
 
   return (
-    <aside className="w-64 min-h-screen bg-gradient-to-b from-[#0a1f3d] via-[#0c2549] to-[#081a33] flex flex-col relative">
+    <aside className="w-64 min-h-screen bg-gradient-to-b from-[#0a1f3d] via-[#0c2549] to-[#081a33] flex flex-col relative print:hidden">
       {/* subtle top glow accent */}
       <div className="absolute top-0 left-0 right-0 h-32 bg-blue-500/10 blur-3xl pointer-events-none" />
 
