@@ -1,33 +1,115 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useBatches } from '@/hooks/useBatches'
+import { useUsers }   from '@/hooks/useUsers'
 
-// staff roles only — student is handled by mode="student"
 const STAFF_ROLES = [
   { value: 'coordinator',       label: 'Batch Coordinator' },
   { value: 'lecturer',          label: 'Lecturer' },
   { value: 'visiting_lecturer', label: 'Visiting Lecturer' },
 ]
 
+function CoordinatorSelect({ lecturers, value, onChange }) {
+  const [open,   setOpen]   = useState(false)
+  const [search, setSearch] = useState('')
+  const ref = useRef(null)
+
+  const selected = lecturers.find(l => l._id === value)
+
+  const filtered = lecturers.filter(l =>
+    l.name.toLowerCase().includes(search.toLowerCase()) ||
+    l.email.toLowerCase().includes(search.toLowerCase())
+  )
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false)
+        setSearch('')
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  return (
+    <div className="relative" ref={ref}>
+      {/* Trigger button */}
+      <button
+        type="button"
+        onClick={() => setOpen(prev => !prev)}
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-left focus:outline-none focus:ring-2 focus:ring-gray-900 flex items-center justify-between"
+      >
+        <span className={selected ? 'text-gray-800' : 'text-gray-400'}>
+          {selected
+            ? `${selected.name} (${selected.email})`
+            : '— Select coordinator —'}
+        </span>
+        <span className="text-gray-400 text-xs">{open ? '▲' : '▼'}</span>
+      </button>
+
+      {/* Dropdown panel */}
+      {open && (
+        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+          {/* Search inside dropdown */}
+          <div className="p-2 border-b border-gray-100">
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Type to search..."
+              autoFocus
+              className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
+            />
+          </div>
+
+          {/* Options list */}
+          <div className="max-h-48 overflow-y-auto">
+            <div
+              onClick={() => { onChange(''); setOpen(false); setSearch('') }}
+              className="px-3 py-2 text-sm text-gray-400 cursor-pointer hover:bg-gray-50"
+            >
+              — None —
+            </div>
+            {filtered.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-gray-400">No results found</div>
+            ) : filtered.map(l => (
+              <div
+                key={l._id}
+                onClick={() => { onChange(l._id); setOpen(false); setSearch('') }}
+                className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 flex items-center justify-between
+                  ${value === l._id ? 'bg-gray-50 font-medium text-gray-900' : 'text-gray-700'}`}
+              >
+                <span>{l.name}</span>
+                <span className="text-xs text-gray-400">{l.email}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function UserModal({ user, onClose, onSaved, mode }) {
   const isEditing = !!(user && user._id)
 
-  // mode comes from the caller, or is inferred from the user being edited
   const resolvedMode = mode || (user?.role === 'student' ? 'student' : 'staff')
   const isStudentMode = resolvedMode === 'student'
 
   const { batches } = useBatches()
+  const { users: lecturers } = useUsers('lecturer')
 
   const [form, setForm] = useState({
-    name:        '',
-    email:       '',
-    password:    '',
-    role:        'lecturer',
-    batchId:     '',
-    isActive:    true,
-    // student-only fields
-    studentId:   '',
+    name:          '',
+    email:         '',
+    password:      '',
+    role:          'lecturer',
+    batchId:       '',
+    coordinatorId: '',
+    isActive:      true,
+    studentId:     '',
   })
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState('')
@@ -35,14 +117,14 @@ export default function UserModal({ user, onClose, onSaved, mode }) {
   useEffect(() => {
     if (user) {
       setForm({
-        name:        user.name        || '',
-        email:       user.email       || '',
-        password:    '',
-        role:        user.role        || (isStudentMode ? 'student' : 'lecturer'),
-        batchId:     user.batchId?._id || user.batchId || '',
-        isActive:    user.isActive ?? true,
-        studentId:   user.studentId   || ''
-       
+        name:          user.name          || '',
+        email:         user.email         || '',
+        password:      '',
+        role:          user.role          || (isStudentMode ? 'student' : 'lecturer'),
+        batchId:       user.batchId?._id  || user.batchId  || '',
+        coordinatorId: user.coordinatorId?._id || user.coordinatorId || '',
+        isActive:      user.isActive ?? true,
+        studentId:     user.studentId     || '',
       })
     } else {
       setForm(prev => ({
@@ -64,12 +146,10 @@ export default function UserModal({ user, onClose, onSaved, mode }) {
     e.preventDefault()
     setError('')
 
-    // student mode requires a batch
     if (isStudentMode && !form.batchId) {
       setError('Please select a batch for the student')
       return
     }
-    // coordinator requires a batch too
     if (!isStudentMode && form.role === 'coordinator' && !form.batchId) {
       setError('Please select a batch for the coordinator')
       return
@@ -88,14 +168,11 @@ export default function UserModal({ user, onClose, onSaved, mode }) {
       if (isEditing && !body.password) delete body.password
 
       if (isStudentMode) {
-        // /api/students doesn't take a role field — it's implied
         delete body.role
       } else {
-        // staff payload doesn't need student-only fields
         delete body.studentId
-    
-        // only coordinators carry a batch in the staff form
-        if (body.role !== 'coordinator') delete body.batchId
+        if (body.role !== 'coordinator')       delete body.batchId
+        if (body.role !== 'visiting_lecturer') delete body.coordinatorId
       }
 
       const res  = await fetch(url, {
@@ -169,7 +246,7 @@ export default function UserModal({ user, onClose, onSaved, mode }) {
                 </select>
               </div>
 
-              {/* batch only matters for coordinators */}
+              {/* Batch — only for coordinators */}
               {form.role === 'coordinator' && (
                 <div>
                   <label className="text-xs text-gray-500 block mb-1">
@@ -182,6 +259,20 @@ export default function UserModal({ user, onClose, onSaved, mode }) {
                       <option key={b._id} value={b._id}>{b.name} ({b.programme})</option>
                     ))}
                   </select>
+                </div>
+              )}
+
+              {/* Coordinator — only for visiting lecturers */}
+              {form.role === 'visiting_lecturer' && (
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">
+                    Coordinator (university lecturer responsible)
+                  </label>
+                  <CoordinatorSelect
+                    lecturers={lecturers}
+                    value={form.coordinatorId}
+                    onChange={(id) => setForm(prev => ({ ...prev, coordinatorId: id }))}
+                  />
                 </div>
               )}
 
@@ -242,9 +333,6 @@ export default function UserModal({ user, onClose, onSaved, mode }) {
                 </select>
               </div>
 
-              
-
-            
               {isEditing && (
                 <div className="flex items-center gap-2">
                   <input type="checkbox" name="isActive" id="isActiveStudent"
@@ -275,7 +363,6 @@ export default function UserModal({ user, onClose, onSaved, mode }) {
                   : (isStudentMode ? 'Enroll student' : 'Create user')}
             </button>
           </div>
-
         </form>
       </div>
     </div>
