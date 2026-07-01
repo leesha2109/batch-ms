@@ -4,8 +4,13 @@ const AccessRequestSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, lowercase: true },
-    role: { type: String, required: true, enum: ["student", "lecturer"] },
+    role: { type: String, required: true, enum: ["student", "lecturer", "visiting_lecturer"] },
     studentNumber: { type: String, default: null },
+    coordinatorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
