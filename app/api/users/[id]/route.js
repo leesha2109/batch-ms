@@ -21,18 +21,38 @@ export async function PATCH(req, { params }) {
     const resolvedParams = await params;
 
     const body = await req.json();
-    const { name, email, role, batchId, isActive, password } = body;
+    const { name, email, role, batchId, coordinatorId, isActive, password } = body;
 
-    const updateData = { name, email, role, batchId, isActive };
+    const updateData = {
+      name,
+      email,
+      role,
+      batchId,
+      coordinatorId: coordinatorId ?? null,
+      isActive,
+    };
 
     // only update password if a new one is provided
     if (password && password.length >= 6) {
       updateData.password = await bcrypt.hash(password, 10);
     }
 
-    const user = await User.findByIdAndUpdate(resolvedParams.id, updateData, {
-      new: true,
-    }).select("-password");
+    let user = null;
+    try {
+      user = await User.findByIdAndUpdate(resolvedParams.id, updateData, {
+        new: true,
+      })
+        .select("-password")
+        .populate({
+          path: "coordinatorId",
+          select: "name email role",
+          options: { strictPopulate: false },
+        });
+    } catch {
+      user = await User.findByIdAndUpdate(resolvedParams.id, updateData, {
+        new: true,
+      }).select("-password");
+    }
 
     if (!user) {
       return NextResponse.json(

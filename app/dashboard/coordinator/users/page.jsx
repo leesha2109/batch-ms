@@ -158,7 +158,6 @@ export default function UsersPage() {
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">Name</th>
-                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">Email</th>
                   <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">Role</th>
                   <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">Status</th>
                   <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">Created</th>
@@ -175,8 +174,17 @@ export default function UsersPage() {
                 ) : (
                   filtered.map((user) => (
                     <tr key={user._id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                      <td className="px-5 py-3 font-medium text-gray-800">{user.name}</td>
-                      <td className="px-5 py-3 text-gray-500">{user.email}</td>
+                      <td className="px-5 py-3">
+                        <div>
+                          <p className="font-medium text-gray-800">{user.name}</p>
+                          <p className="text-xs text-gray-400">{user.email}</p>
+                          {user.role === "visiting_lecturer" && (
+                            <p className="text-[11px] text-gray-500 mt-0.5">
+                              Coordinator: {user.coordinatorId?.name || "—"}
+                            </p>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-5 py-3">
                         <span className={`text-xs px-2 py-1 rounded-full font-medium ${ROLE_COLORS[user.role]}`}>
                           {ROLE_LABELS[user.role]}
