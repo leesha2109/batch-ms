@@ -8,7 +8,7 @@ export async function POST(request) {
   try {
     await connectDB();
     const body = await request.json();
-    const { name, email, role, studentNumber } = body;
+    const { name, email, role, studentNumber, coordinatorId } = body;
 
     if (!name || !email || !role) {
       return NextResponse.json(
@@ -28,6 +28,7 @@ export async function POST(request) {
       email,
       role,
       studentNumber: studentNumber || null,
+      coordinatorId: coordinatorId || null,
       status: "pending",
     });
 

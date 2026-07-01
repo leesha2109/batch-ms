@@ -55,7 +55,7 @@ export async function PATCH(req, { params }) {
 
     if (action === "approve") {
       // if caller provided a password and wants the API to create the user, do so
-      const { password, createUser } = body || {};
+      const { password, createUser, role: selectedRole, coordinatorId } = body || {};
       if (createUser) {
         if (!password) {
           return NextResponse.json(
@@ -76,14 +76,16 @@ export async function PATCH(req, { params }) {
           name: reqDoc.name,
           email: reqDoc.email,
           password: hashed,
-          role: reqDoc.role === "student" ? "student" : reqDoc.role,
+          role: selectedRole || (reqDoc.role === "student" ? "student" : reqDoc.role),
+          coordinatorId: selectedRole === "visiting_lecturer" ? (coordinatorId || reqDoc.coordinatorId || null) : null,
           isActive: true,
         });
 
         reqDoc.status = "approved";
         await reqDoc.save();
 
-        const { password: _, ...userWithoutPassword } = user.toObject();
+        const userWithoutPassword = user.toObject();
+        delete userWithoutPassword.password;
         return NextResponse.json({ success: true, user: userWithoutPassword });
       }
 
