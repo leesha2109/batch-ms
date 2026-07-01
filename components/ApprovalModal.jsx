@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useUsers } from "@/hooks/useUsers";
 
 const ROLES = [
   { value: "coordinator", label: "Batch Coordinator" },
@@ -10,11 +11,13 @@ const ROLES = [
 ];
 
 export default function ApprovalModal({ request, onClose, onApproved }) {
+  const { users: lecturers } = useUsers("lecturer");
   const [form, setForm] = useState({
     name: request.name,
     email: request.email,
     password: "",
     role: request.role === "student" ? "student" : request.role,
+    coordinatorId: request.coordinatorId || "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -39,6 +42,12 @@ export default function ApprovalModal({ request, onClose, onApproved }) {
         return;
       }
 
+      if (form.role === "visiting_lecturer" && !form.coordinatorId) {
+        setError("Please select a university coordinator for the visiting lecturer");
+        setLoading(false);
+        return;
+      }
+
       // Call PATCH to request-access with createUser=true so server creates the
       // user and marks the request approved atomically (avoids race/inconsistency)
       const approveRes = await fetch(`/api/request-access/${request._id}`, {
@@ -49,6 +58,8 @@ export default function ApprovalModal({ request, onClose, onApproved }) {
           action: "approve",
           createUser: true,
           password: form.password,
+          role: form.role,
+          coordinatorId: form.role === "visiting_lecturer" ? form.coordinatorId : null,
         }),
       });
 
@@ -150,6 +161,27 @@ export default function ApprovalModal({ request, onClose, onApproved }) {
               ))}
             </select>
           </div>
+
+          {form.role === "visiting_lecturer" && (
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">
+                University coordinator
+              </label>
+              <select
+                name="coordinatorId"
+                value={form.coordinatorId}
+                onChange={handleChange}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">— Select coordinator —</option>
+                {lecturers.map((lecturer) => (
+                  <option key={lecturer._id} value={lecturer._id}>
+                    {lecturer.name} ({lecturer.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg border border-red-200">
