@@ -9,7 +9,7 @@ export default function RequestAccessPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: 'student',
+    role: 'lecturer',
     studentNumber: ''
   })
   const [loading, setLoading] = useState(false)
@@ -38,7 +38,7 @@ export default function RequestAccessPage() {
 
       if (response.ok) {
         setSuccess(true)
-        setFormData({ name: '', email: '', role: 'student', studentNumber: '' })
+        setFormData({ name: '', email: '', role: 'lecturer', studentNumber: '' })
         setTimeout(() => {
           router.push('/login')
         }, 2000)
@@ -215,62 +215,19 @@ export default function RequestAccessPage() {
             }}>
               Role
             </label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              style={{
-                width: '100%',
-                padding: '11px 12px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '8px',
-                fontSize: '14px',
-                outline: 'none',
-                background: 'rgba(255, 255, 255, 0.08)',
-                color: '#fff',
-                boxSizing: 'border-box',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="student" style={{ background: '#001D39' }}>Student</option>
-              <option value="lecturer" style={{ background: '#001D39' }}>Lecturer</option>
-              
-            </select>
-          </div>
-
-          {/* Student Number - Conditional */}
-          {formData.role === 'student' && (
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                fontSize: '13px',
-                color: 'rgba(255, 255, 255, 0.8)',
-                display: 'block',
-                marginBottom: '6px',
-                fontWeight: '500'
-              }}>
-                Student Number
-              </label>
-              <input
-                type="text"
-                name="studentNumber"
-                value={formData.studentNumber}
-                onChange={handleChange}
-                required={formData.role === 'student'}
-                style={{
-                  width: '100%',
-                  padding: '11px 12px',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  outline: 'none',
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  color: '#fff',
-                  boxSizing: 'border-box'
-                }}
-                placeholder="SC/20XX/XXXXX"
-              />
+            <div style={{
+              width: '100%',
+              padding: '11px 12px',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '8px',
+              fontSize: '14px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              color: '#fff',
+              boxSizing: 'border-box'
+            }}>
+              Lecturer
             </div>
-          )}
+          </div>
 
           {/* Institution */}
           {/* Removed */}
