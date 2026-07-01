@@ -26,6 +26,11 @@ const UserSchema = new mongoose.Schema(
       ref: "Batch",
       default: null, // only used for coordinators and students
     },
+    coordinatorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null, // only used for visiting lecturers
+    },
     isActive: {
       type: Boolean,
       default: true,
