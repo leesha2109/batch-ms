@@ -38,7 +38,11 @@ const ROLE_LABELS = {
 };
 
 function toDateKey(d) {
-  return new Date(d).toISOString().split("T")[0];
+  const date = new Date(d);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 function startOfMonth(d) {
   return new Date(d.getFullYear(), d.getMonth(), 1);
