@@ -104,7 +104,7 @@ export default function ResultsPage() {
           {selBatch && selSemester && assignments.length > 0 && (
             <div className="flex gap-2 ml-auto">
               <span className="text-md px-4 py-2 rounded-full bg-green-900 text-white font-medium">
-                {examHeldCount}/{assignments.length} Embxams held
+                {examHeldCount}/{assignments.length} Exams held
               </span>
               <span className="text-md px-4 py-2 rounded-full bg-blue-900 text-white font-medium">
                 {resultsReleasedCount}/{assignments.length} results released
