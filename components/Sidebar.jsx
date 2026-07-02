@@ -12,7 +12,7 @@ const hodLinks = [
   { label: "Timetable", href: "/dashboard/hod/timetable", icon: "📅" },
   { label: "Courses", href: "/dashboard/hod/subjects", icon: "📚" },
   { label: "Lecture Hours", href: "/dashboard/hod/lecture-hours", icon: "🕐" },
-  { label: "Marks", href: "/dashboard/hod/marks", icon: "📊" },
+  { label: "Results Status", href: "/dashboard/hod/marks", icon: "📊" },
   { label: "Exams", href: "/dashboard/hod/exams", icon: "📝" },
   { label: "Projects", href: "/dashboard/hod/projects", icon: "🔬" },
   { section: "People" },
@@ -35,7 +35,7 @@ const coordinatorLinks = [
     href: "/dashboard/coordinator/lecture-hours",
     icon: "🕐",
   },
-  { label: "Marks", href: "/dashboard/coordinator/marks", icon: "📝" },
+  { label: "Results Status", href: "/dashboard/coordinator/marks", icon: "�" },
   { label: "Projects", href: "/dashboard/coordinator/projects", icon: "🔬" },
   { section: "People" },
   { label: "Users", href: "/dashboard/coordinator/users", icon: "👥" },
@@ -47,7 +47,7 @@ const coordinatorLinks = [
 const lecturerLinks = [
   { label: "Dashboard", href: "/dashboard/lecturer", icon: "🏠" },
   { label: "My Subjects", href: "/dashboard/lecturer/subjects", icon: "📚" },
-  { label: "Marks", href: "/dashboard/lecturer/marks", icon: "📝" },
+  { label: "Results Status", href: "/dashboard/lecturer/marks", icon: "📊" },
   {
     label: "Lecture Hours",
     href: "/dashboard/lecturer/lecture-hours",
