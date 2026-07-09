@@ -13,7 +13,7 @@ export async function GET(req) {
 
     await connectDB();
 
-sterNumber) query.semesterNumber = Number(semesterNumber)
+
     const { searchParams } = new URL(req.url);
     const batchId = searchParams.get("batchId");
     const semesterNumber = searchParams.get("semesterNumber");
