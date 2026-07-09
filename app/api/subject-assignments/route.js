@@ -13,6 +13,7 @@ export async function GET(req) {
 
     await connectDB();
 
+sterNumber) query.semesterNumber = Number(semesterNumber)
     const { searchParams } = new URL(req.url);
     const batchId = searchParams.get("batchId");
     const semesterNumber = searchParams.get("semesterNumber");
@@ -22,6 +23,7 @@ export async function GET(req) {
     if (batchId) query.batchId = batchId;
     if (semesterNumber) query.semesterNumber = Number(semesterNumber);
     if (lecturerId) query.lecturerId = lecturerId;
+
 
     const assignments = await SubjectAssignment.find(query)
       .populate("subjectId", "code name credits type")

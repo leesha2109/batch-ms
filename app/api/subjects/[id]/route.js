@@ -4,6 +4,28 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/authOptions'
 
+export async function GET(req, { params }) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    await connectDB()
+    const { id } = await params
+    const subject = await Subject.findById(id)
+      .populate('coordinatorId', 'name email')
+
+    if (!subject) {
+      return NextResponse.json({ success: false, message: 'Subject not found' }, { status: 404 })
+    }
+
+    return NextResponse.json({ success: true, subject })
+  } catch (error) {
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 })
+  }
+}
+
 export async function PATCH(req, { params }) {
   try {
     const session = await getServerSession(authOptions)
