@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import connectDB from '@/lib/mongoose'
 import Subject from '@/models/Subjects'
+import SubjectAssignment from '@/models/SubjectAssignment'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/authOptions'
@@ -24,8 +25,36 @@ export async function GET(req) {
       { code: { $regex: search, $options: 'i' } }
     ]
 
-    const subjects = await Subject.find(query).sort({ code: 1 })
-    return NextResponse.json({ success: true, subjects })
+    const subjects = await Subject.find(query)
+      .populate('coordinatorId', 'name email')
+      .sort({ code: 1 })
+      .lean()
+
+    // For each subject find the most recent assignment and attach lecturerId
+    const subjectIds = subjects.map(s => s._id)
+    const assignments = await SubjectAssignment.find({
+      subjectId:  { $in: subjectIds },
+      lecturerId: { $ne: null }
+    })
+      .populate('lecturerId', 'name email')
+      .lean()
+
+    // Map subjectId → lecturer (first assignment found per subject)
+    const lecturerMap = {}
+    assignments.forEach(a => {
+      const sid = a.subjectId.toString()
+      if (!lecturerMap[sid]) {
+        lecturerMap[sid] = a.lecturerId
+      }
+    })
+
+    // Attach assignedLecturer to each subject
+    const enrichedSubjects = subjects.map(s => ({
+      ...s,
+      assignedLecturer: lecturerMap[s._id.toString()] || null
+    }))
+
+    return NextResponse.json({ success: true, subjects: enrichedSubjects })
   } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 })
   }
