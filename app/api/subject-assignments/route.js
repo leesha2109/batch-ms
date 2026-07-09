@@ -15,10 +15,12 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url)
     const batchId        = searchParams.get('batchId')
     const semesterNumber = searchParams.get('semesterNumber')
+    const subjectId      = searchParams.get('subjectId')
 
     let query = {}
+    if (subjectId)      query.subjectId      = subjectId
     if (batchId)        query.batchId        = batchId
-    if (semesterNumber) query.semesterNumber  = Number(semesterNumber)
+    if (semesterNumber) query.semesterNumber = Number(semesterNumber)
 
     const assignments = await SubjectAssignment.find(query)
       .populate('subjectId',  'code name credits type')
