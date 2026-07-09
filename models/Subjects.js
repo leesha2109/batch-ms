@@ -41,6 +41,11 @@ const SubjectSchema = new mongoose.Schema({
     required: true,
     enum: [1, 2]
   },
+  coordinatorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
   description: {
     type: String,
     default: ''
