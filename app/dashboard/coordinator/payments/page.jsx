@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import {
   DollarSign,
   Clock,
-  AlertCircle,
   CheckCircle2,
   Plus,
   ChevronDown,
@@ -137,7 +136,6 @@ export default function PaymentsPage() {
     loadPayments();
   }
 
-  // Group payments by lecturer
   const groupedByLecturer = useMemo(() => {
     const groups = {};
     for (const p of payments) {
@@ -160,15 +158,20 @@ export default function PaymentsPage() {
     return Object.values(groups);
   }, [payments]);
 
-  // Summary stats
   const stats = useMemo(() => {
+    const totalPaid = payments
+      .filter((p) => p.status === "paid")
+      .reduce((sum, p) => sum + p.amount, 0);
+    const totalPending = payments
+      .filter((p) => p.status === "pending")
+      .reduce((sum, p) => sum + p.amount, 0);
     const lecturersWithPending = new Set(
       payments
         .filter((p) => p.status === "pending")
         .map((p) => p.lecturer?._id),
     ).size;
 
-    return { lecturersWithPending };
+    return { totalPaid, totalPending, lecturersWithPending };
   }, [payments]);
 
   function formatCurrency(amount) {
@@ -183,17 +186,33 @@ export default function PaymentsPage() {
       />
 
       <div className="px-8 py-6">
-        {/* Pending payment lecturer count */}
-        <div className="grid grid-cols-1 gap-4 mb-6">
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <StatCard
+            label="Total Paid"
+            value={formatCurrency(stats.totalPaid)}
+            sub="All time"
+            color="green"
+          />
+          <StatCard
+            label="Total Pending"
+            value={formatCurrency(stats.totalPending)}
+            sub="Awaiting payment"
+            color="red"
+          />
           <StatCard
             label="Lecturers Awaiting"
             value={stats.lecturersWithPending}
             sub="With pending dues"
             color="purple"
           />
+          <StatCard
+            label="Records"
+            value={payments.length}
+            sub="Total entries"
+            color="blue"
+          />
         </div>
 
-        {/* Filters + Add button */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex gap-3">
             <select
@@ -229,7 +248,6 @@ export default function PaymentsPage() {
           </button>
         </div>
 
-        {/* Grouped by lecturer */}
         {loading ? (
           <p className="text-sm text-gray-400 mt-6">
             Loading payment records...
@@ -261,128 +279,77 @@ export default function PaymentsPage() {
                       ) : (
                         <ChevronDown className="w-4 h-4 text-gray-400" />
                       )}
-                      <div className="text-left">
-                        <p className="text-sm font-semibold text-gray-800">
-                          {group.lecturer?.name || "Unknown Lecturer"}
+                      <div>
+                        <p className="font-medium text-gray-800">
+                          {group.lecturer?.name}
                         </p>
-                        <p className="text-xs text-gray-400">
-                          {group.records.length} payment record
-                          {group.records.length !== 1 ? "s" : ""}
+                        <p className="text-xs text-gray-500">
+                          {group.lecturer?.email}
                         </p>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <p className="text-xs text-gray-400">Paid</p>
-                        <p className="text-sm font-semibold text-green-600">
-                          {formatCurrency(group.totalPaid)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-gray-400">Pending</p>
-                        <p className="text-sm font-semibold text-red-500">
-                          {formatCurrency(group.totalPending)}
-                        </p>
-                      </div>
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openAddModal(group.lecturer?._id);
-                        }}
-                        className="text-xs font-medium text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-50"
-                      >
-                        + Add
-                      </div>
+                    <div className="flex gap-2">
+                      <span className="text-sm font-medium text-green-600">
+                        {formatCurrency(group.totalPaid)}
+                      </span>
+                      <span className="text-sm font-medium text-red-600">
+                        {formatCurrency(group.totalPending)}
+                      </span>
                     </div>
                   </button>
 
                   {isExpanded && (
                     <div className="border-t border-gray-100">
                       <table className="w-full text-sm">
-                        <thead>
-                          <tr className="text-xs text-gray-400 bg-gray-50">
-                            <th className="text-left font-medium px-4 py-2">
-                              Batch
-                            </th>
-                            <th className="text-left font-medium px-4 py-2">
-                              Subject
-                            </th>
-                            <th className="text-left font-medium px-4 py-2">
-                              Semester
-                            </th>
-                            <th className="text-left font-medium px-4 py-2">
-                              Hours
-                            </th>
-                            <th className="text-left font-medium px-4 py-2">
-                              Rate/hr
-                            </th>
-                            <th className="text-left font-medium px-4 py-2">
-                              Amount
-                            </th>
-                            <th className="text-left font-medium px-4 py-2">
-                              Status
-                            </th>
-                            <th className="text-left font-medium px-4 py-2">
-                              Date
-                            </th>
-                            <th className="text-left font-medium px-4 py-2"></th>
-                          </tr>
-                        </thead>
                         <tbody>
-                          {group.records.map((p) => (
-                            <tr key={p._id} className="border-t border-gray-50">
-                              <td className="px-4 py-3 text-gray-700">
-                                {p.batch?.name || "-"}
+                          {group.records.map((record) => (
+                            <tr
+                              key={record._id}
+                              className="border-b border-gray-50 hover:bg-gray-50"
+                            >
+                              <td className="px-4 py-3">
+                                {record.subject || "—"}
                               </td>
-                              <td className="px-4 py-3 text-gray-700">
-                                {p.subject?.name || "-"}
-                              </td>
-                              <td className="px-4 py-3 text-gray-700">
-                                Sem {p.semester}
-                              </td>
-                              <td className="px-4 py-3 text-gray-700">
-                                {p.hoursTaught}
-                              </td>
-                              <td className="px-4 py-3 text-gray-700">
-                                {formatCurrency(p.ratePerHour)}
-                              </td>
-                              <td className="px-4 py-3 font-medium text-gray-800">
-                                {formatCurrency(p.amount)}
+                              <td className="px-4 py-3">
+                                Rs. {Number(record.amount).toLocaleString()}
                               </td>
                               <td className="px-4 py-3">
                                 <span
-                                  className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
-                                    p.status === "paid"
-                                      ? "bg-green-50 text-green-600"
-                                      : "bg-amber-50 text-amber-600"
+                                  className={`text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1 w-fit ${
+                                    record.status === "paid"
+                                      ? "bg-green-100 text-green-700"
+                                      : "bg-amber-100 text-amber-700"
                                   }`}
                                 >
-                                  {p.status === "paid" ? (
+                                  {record.status === "paid" ? (
                                     <CheckCircle2 className="w-3 h-3" />
                                   ) : (
                                     <Clock className="w-3 h-3" />
                                   )}
-                                  {p.status === "paid" ? "Paid" : "Pending"}
+                                  {record.status === "paid"
+                                    ? "Paid"
+                                    : "Pending"}
                                 </span>
                               </td>
                               <td className="px-4 py-3 text-gray-500 text-xs">
-                                {p.paymentDate
-                                  ? new Date(p.paymentDate).toLocaleDateString()
+                                {record.paymentDate
+                                  ? new Date(
+                                      record.paymentDate,
+                                    ).toLocaleDateString()
                                   : "-"}
                               </td>
                               <td className="px-4 py-3 text-right">
                                 <div className="flex items-center gap-2 justify-end">
-                                  {p.status === "pending" && (
+                                  {record.status === "pending" && (
                                     <button
-                                      onClick={() => markAsPaid(p)}
+                                      onClick={() => markAsPaid(record)}
                                       className="text-xs font-medium text-green-600 hover:text-green-700"
                                     >
                                       Mark Paid
                                     </button>
                                   )}
                                   <button
-                                    onClick={() => openEditModal(p)}
+                                    onClick={() => openEditModal(record)}
                                     className="text-xs font-medium text-gray-500 hover:text-gray-700"
                                   >
                                     Edit

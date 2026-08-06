@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { FileText, FileType, Download } from "lucide-react";
 import TopHeader from "@/components/TopHeader";
 import StatCard from "@/components/StatCard";
 import PendingApprovals from "@/components/PendingApprovals";
@@ -151,11 +152,50 @@ export default function CoordinatorDashboard() {
             )}
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-100 p-5">
+          {/* Downloads panel */}
+          <div className="bg-blue-100 rounded-xl border border-gray-100 p-5">
             <h2 className="text-sm font-semibold text-gray-700 mb-4">
-              Recent Activity
+              Downloads
             </h2>
-            <p className="text-sm text-gray-400">No recent activity yet.</p>
+            <div className="space-y-3">
+              <a
+                href="/documents/visiting-lecturer-declaration-form.pdf"
+                download
+                className="flex items-center justify-between p-3 rounded-lg border border-blue-500 hover:bg-gray-50 transition"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                    <FileText className="w-5 h-5 text-red-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">
+                      Visiting Lecturer Declaration Form
+                    </p>
+                    <p className="text-xs text-gray-400">PDF Document</p>
+                  </div>
+                </div>
+                <Download className="w-4 h-4 text-gray-400 shrink-0" />
+              </a>
+
+              <a
+                href="/documents/visiting-lecturer-appointment-letter.docx"
+                download
+                className="flex items-center justify-between p-3 rounded-lg border border-blue-500 hover:bg-gray-50 transition"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                    <FileType className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">
+                      Visiting Lecturer Appointment Letter
+                    </p>
+                    <p className="text-xs text-gray-400">Word Document</p>
+                  </div>
+                </div>
+                <Download className="w-4 h-4 text-gray-400 shrink-0" />
+              </a>
+            </div>
           </div>
         </div>
       </div>

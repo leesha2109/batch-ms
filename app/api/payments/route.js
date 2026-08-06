@@ -59,10 +59,15 @@ export async function POST(request) {
       );
     }
 
+    const rate =
+      ratePerHour !== undefined && ratePerHour !== null && ratePerHour !== ""
+        ? Number(ratePerHour)
+        : 1500;
+
     const computedAmount =
       amount !== undefined && amount !== null && amount !== ""
         ? Number(amount)
-        : Number(hoursTaught || 0) * Number(ratePerHour || 0);
+        : Number(hoursTaught || 0) * rate;
 
     const existingPaid = await Payment.findOne({
       lecturer,
@@ -88,7 +93,7 @@ export async function POST(request) {
       subject,
       semester,
       hoursTaught: Number(hoursTaught || 0),
-      ratePerHour: Number(ratePerHour || 0),
+      ratePerHour: rate,
       amount: computedAmount,
       status: status || "pending",
       paymentDate: status === "paid" ? paymentDate || new Date() : null,

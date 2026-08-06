@@ -51,7 +51,6 @@ function daysInMonth(d) {
   return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
 }
 
-// BSc programmes run 4 semesters in this system, BCS runs 2 — same rule used on the Batches page
 function getSemesterCount(programme) {
   if (programme === "BSc") return 4;
   if (programme === "BCS") return 2;

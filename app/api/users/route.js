@@ -3,7 +3,34 @@ import User from "@/models/User";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
 import authOptions from "@/lib/authOptions";
+import { sendEmail } from "@/lib/email";
 import { NextResponse } from "next/server";
+
+const DEFAULT_LECTURER_PASSWORD =
+  process.env.DEFAULT_LECTURER_PASSWORD || "lecturer123";
+const DEFAULT_STUDENT_PASSWORD =
+  process.env.DEFAULT_STUDENT_PASSWORD || "student123";
+const LOGIN_URL = process.env.NEXTAUTH_URL
+  ? `${process.env.NEXTAUTH_URL.replace(/\/$/, "")}/login`
+  : "http://localhost:3000/login";
+
+async function sendWelcomeEmail({ to, name, role, password }) {
+  const subject = "Your BatchMS account is ready";
+  const roleLabel = role === "student" ? "Student" : "Lecturer";
+  const text = `Hello ${name},\n\nYour BatchMS account has been created as a ${roleLabel}.\n\nEmail: ${to}\nPassword: ${password}\n\nYou can log in here: ${LOGIN_URL}\n\nPlease change your password after your first login.`;
+  const html = `
+    <p>Hello ${name},</p>
+    <p>Your <strong>BatchMS</strong> account has been created as a <strong>${roleLabel}</strong>.</p>
+    <ul>
+      <li><strong>Email:</strong> ${to}</li>
+      <li><strong>Password:</strong> ${password}</li>
+    </ul>
+    <p>You can log in here: <a href="${LOGIN_URL}">${LOGIN_URL}</a></p>
+    <p>Please change your password after your first login.</p>
+  `;
+
+  await sendEmail({ to, subject, text, html });
+}
 
 // GET all users
 export async function GET(req) {
@@ -71,18 +98,32 @@ export async function POST(req) {
     const body = await req.json();
     const { name, email, password, role, batchId, coordinatorId } = body;
 
-    // validation
-    if (!name || !email || !password || !role) {
+    if (!name || !email || !role) {
       return NextResponse.json(
         {
           success: false,
-          message: "Name, email, password and role are required",
+          message: "Name, email and role are required",
         },
         { status: 400 },
       );
     }
 
-    // check if email already exists
+    const finalPassword = password?.trim()
+      ? password.trim()
+      : role === "student"
+        ? DEFAULT_STUDENT_PASSWORD
+        : DEFAULT_LECTURER_PASSWORD;
+
+    if (password && password.trim().length > 0 && password.trim().length < 6) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Password must be at least 6 characters when provided",
+        },
+        { status: 400 },
+      );
+    }
+
     const existing = await User.findOne({ email });
     if (existing) {
       return NextResponse.json(
@@ -91,7 +132,7 @@ export async function POST(req) {
       );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(finalPassword, 10);
 
     const user = await User.create({
       name,
@@ -102,6 +143,24 @@ export async function POST(req) {
       coordinatorId: coordinatorId || null,
       isActive: true,
     });
+
+    try {
+      await sendWelcomeEmail({
+        to: email,
+        name,
+        role,
+        password: finalPassword,
+      });
+    } catch (emailError) {
+      await User.findByIdAndDelete(user._id).catch(() => null);
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Failed to send welcome email: ${emailError.message}`,
+        },
+        { status: 500 },
+      );
+    }
 
     let populatedUser = null;
     try {

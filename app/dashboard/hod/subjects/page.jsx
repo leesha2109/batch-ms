@@ -22,18 +22,18 @@ const PROG_COLORS = {
 // AFTER — inline hex values, never purged
 const LEVEL_SEM_STYLES = {
   1: {
-    headerBg:  '#1e3a8a',              // dark navy blue
-    headerText:'#ffffff',
-    pillBg:    'rgba(255,255,255,0.2)',
-    pillText:  '#ffffff',
+    headerBg: "#1e3a8a", // dark navy blue
+    headerText: "#ffffff",
+    pillBg: "rgba(255,255,255,0.2)",
+    pillText: "#ffffff",
   },
   2: {
-    headerBg:  '#6b21a8',              // deep purple
-    headerText:'#ffffff',
-    pillBg:    'rgba(255,255,255,0.2)',
-    pillText:  '#ffffff',
+    headerBg: "#6b21a8", // deep purple
+    headerText: "#ffffff",
+    pillBg: "rgba(255,255,255,0.2)",
+    pillText: "#ffffff",
   },
-}
+};
 
 // ── inline modal ──────────────────────────────────────────────
 function SubjectFormModal({ subject, onClose, onSaved }) {
@@ -497,7 +497,7 @@ function AssignModal({ batchId, semesterNumber, year, onClose, onSaved }) {
 
   const lecturerOptions = allLecturers.map((l) => ({
     value: l._id,
-    label: `${l.name} (${l.role === "visiting_lecturer" ? "Visiting" : "Permanent"})`,
+    label: `${l.name} (${l.role === "visiting_lecturer" ? "Visiting" : "Confirmed"})`,
   }));
 
   async function handleSubmit(e) {
@@ -744,24 +744,28 @@ export default function SubjectsPage() {
                               key={key}
                               className="bg-blue-50 rounded-xl border border-blue-200 p-4"
                             >
-                             
-<div
-  style={{ backgroundColor: headerStyle.headerBg }}
-  className="flex items-center justify-between mb-3 px-3 py-2 rounded-lg"
->
-  <p style={{ color: headerStyle.headerText }} className="text-sm font-medium">
-    Level {level} · Semester {semester}
-  </p>
-  <span
-    style={{
-      backgroundColor: headerStyle.pillBg,
-      color: headerStyle.pillText,
-    }}
-    className="text-xs px-2 py-0.5 rounded-full font-medium"
-  >
-    {totalCredits} credits
-  </span>
-</div>
+                              <div
+                                style={{
+                                  backgroundColor: headerStyle.headerBg,
+                                }}
+                                className="flex items-center justify-between mb-3 px-3 py-2 rounded-lg"
+                              >
+                                <p
+                                  style={{ color: headerStyle.headerText }}
+                                  className="text-sm font-medium"
+                                >
+                                  Level {level} · Semester {semester}
+                                </p>
+                                <span
+                                  style={{
+                                    backgroundColor: headerStyle.pillBg,
+                                    color: headerStyle.pillText,
+                                  }}
+                                  className="text-xs px-2 py-0.5 rounded-full font-medium"
+                                >
+                                  {totalCredits} credits
+                                </span>
+                              </div>
                               <div className="space-y-1">
                                 {subs.map((s) => (
                                   <div

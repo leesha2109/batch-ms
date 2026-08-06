@@ -1,14 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { useState } from "react";
 import { useBatches } from "@/hooks/useBatches";
 import { useAssignments } from "@/hooks/useAssignments";
 import TopHeader from "@/components/TopHeader";
-import ExamTimetableModal from "@/components/ExamTimetableModal";
 
 const SEMESTER_OPTIONS = [1, 2];
-const AUTHORIZED_ROLES = ["hod", "coordinator"];
 
 // ── Inline editable cell ──────────────────────────────────────
 function EditableCell({ value, onChange, placeholder, type = "text" }) {
@@ -74,23 +71,7 @@ function StatusSelect({ value, onChange, options, colors }) {
   );
 }
 
-// ── Timeago helper ──────────────────────────────────────────────
-function timeAgo(dateStr) {
-  const diffMs = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
-
 export default function ExamsPage() {
-  const { data: session } = useSession();
-  const userRole = session?.user?.role;
-  const canManageTimetable = AUTHORIZED_ROLES.includes(userRole);
-  const isStudent = userRole === "student";
-
   const { batches } = useBatches();
   const [tab, setTab] = useState("paper_settings");
   const [selBatch, setSelBatch] = useState("");
@@ -101,18 +82,6 @@ export default function ExamsPage() {
   // local overrides for editable fields (keyed by assignment _id)
   const [paperSettings, setPaperSettings] = useState({});
   const [paperMarkings, setPaperMarkings] = useState({});
-
-  // exam timetable state
-  const [timetableEntries, setTimetableEntries] = useState([]);
-  const [loadingTimetable, setLoadingTimetable] = useState(false);
-  const [showTimetableModal, setShowTimetableModal] = useState(false);
-  const [editingEntry, setEditingEntry] = useState(null);
-
-  // comments state
-  const [comments, setComments] = useState([]);
-  const [commentText, setCommentText] = useState("");
-  const [postingComment, setPostingComment] = useState(false);
-  const [loadingComments, setLoadingComments] = useState(false);
 
   const selBatchObj = batches.find((b) => b._id === selBatch);
   const levels =
@@ -128,89 +97,6 @@ export default function ExamsPage() {
       : null;
 
   const { assignments, refetch } = useAssignments(selBatch, semesterNumber);
-
-  // ── exam timetable fetching ─────────────────────────────────
-  const loadTimetable = useCallback(async () => {
-    if (!selBatch || !semesterNumber) return;
-    setLoadingTimetable(true);
-    try {
-      const res = await fetch(
-        `/api/exam-timetable?batch=${selBatch}&semester=${semesterNumber}`,
-      );
-      const data = await res.json();
-      if (res.ok) setTimetableEntries(data.entries || []);
-    } catch (err) {
-      console.error("Failed to load exam timetable", err);
-    } finally {
-      setLoadingTimetable(false);
-    }
-  }, [selBatch, semesterNumber]);
-
-  const loadComments = useCallback(async () => {
-    if (!selBatch || !semesterNumber) return;
-    setLoadingComments(true);
-    try {
-      const res = await fetch(
-        `/api/exam-timetable/comments?batch=${selBatch}&semester=${semesterNumber}`,
-      );
-      const data = await res.json();
-      if (res.ok) setComments(data.comments || []);
-    } catch (err) {
-      console.error("Failed to load comments", err);
-    } finally {
-      setLoadingComments(false);
-    }
-  }, [selBatch, semesterNumber]);
-
-  useEffect(() => {
-    if (tab === "exam_timetable" && selBatch && semesterNumber) {
-      loadTimetable();
-      loadComments();
-    }
-  }, [tab, selBatch, semesterNumber, loadTimetable, loadComments]);
-
-  async function handleDeleteEntry(id) {
-    if (!confirm("Delete this exam timetable entry?")) return;
-    try {
-      const res = await fetch(`/api/exam-timetable/${id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) loadTimetable();
-      else {
-        const data = await res.json();
-        alert(data.error || "Failed to delete");
-      }
-    } catch (err) {
-      console.error("Failed to delete entry", err);
-    }
-  }
-
-  async function handlePostComment() {
-    if (!commentText.trim()) return;
-    setPostingComment(true);
-    try {
-      const res = await fetch("/api/exam-timetable/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          batch: selBatch,
-          semester: semesterNumber,
-          message: commentText.trim(),
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setCommentText("");
-        loadComments();
-      } else {
-        alert(data.error || "Failed to post comment");
-      }
-    } catch (err) {
-      console.error("Failed to post comment", err);
-    } finally {
-      setPostingComment(false);
-    }
-  }
 
   // ── helpers ──────────────────────────────────────────────────
   function getPaperSetting(id) {
@@ -301,10 +187,6 @@ export default function ExamsPage() {
     finished: "bg-green-100 text-green-700",
     default: "bg-amber-100 text-amber-700",
   };
-  const EXAM_TYPE_LABELS = {
-    theory: "Theory",
-    practical: "Practical",
-  };
 
   const showTable = selBatch && selLevel && selSemester;
 
@@ -312,7 +194,7 @@ export default function ExamsPage() {
     <div>
       <TopHeader
         title="Exams"
-        subtitle="Manage paper settings, marking and exam timetable"
+        subtitle="Manage paper settings and marking for each subject"
       />
 
       <div className="px-8 py-6">
@@ -372,7 +254,6 @@ export default function ExamsPage() {
           {[
             { key: "paper_settings", label: "Paper Settings" },
             { key: "paper_marking", label: "Paper Marking" },
-            { key: "exam_timetable", label: "Exam Timetable" },
           ].map((t) => (
             <button
               key={t.key}
@@ -396,8 +277,8 @@ export default function ExamsPage() {
               Select a batch, level and semester to view exams
             </p>
           </div>
-        ) : tab === "paper_settings" ? (
-          /* ── PAPER SETTINGS TAB ── */
+        ) : /* ── PAPER SETTINGS TAB ── */
+        tab === "paper_settings" ? (
           <div className="bg-white rounded-xl border border-blue-100 overflow-hidden">
             <table className="w-full text-sm">
               <thead>
@@ -438,6 +319,7 @@ export default function ExamsPage() {
                       key={a._id}
                       className={`border-b border-blue-50 hover:bg-blue-50 ${busy === a._id ? "opacity-60" : ""}`}
                     >
+                      {/* Subject */}
                       <td className="px-5 py-3">
                         <p className="text-xs font-mono text-blue-400">
                           {a.subjectId?.code}
@@ -446,6 +328,8 @@ export default function ExamsPage() {
                           {a.subjectId?.name}
                         </p>
                       </td>
+
+                      {/* Lecturer */}
                       <td className="px-5 py-3 text-blue-600 text-sm">
                         {a.lecturerId?.name || (
                           <span className="text-amber-500 text-xs">
@@ -453,6 +337,8 @@ export default function ExamsPage() {
                           </span>
                         )}
                       </td>
+
+                      {/* Paper Setting Status */}
                       <td className="px-5 py-3">
                         <StatusSelect
                           value={psVal(a, "status") || "pending"}
@@ -463,6 +349,8 @@ export default function ExamsPage() {
                           colors={PAPER_STATUS_COLORS}
                         />
                       </td>
+
+                      {/* Moderator Name */}
                       <td className="px-5 py-3 min-w-[160px]">
                         <EditableCell
                           value={psVal(a, "moderatorName")}
@@ -472,6 +360,8 @@ export default function ExamsPage() {
                           placeholder="Add moderator"
                         />
                       </td>
+
+                      {/* Moderator Email */}
                       <td className="px-5 py-3 min-w-[180px]">
                         <EditableCell
                           value={psVal(a, "moderatorEmail")}
@@ -482,6 +372,8 @@ export default function ExamsPage() {
                           type="email"
                         />
                       </td>
+
+                      {/* Moderate Status */}
                       <td className="px-5 py-3">
                         <StatusSelect
                           value={psVal(a, "moderateStatus") || "pending"}
@@ -498,7 +390,7 @@ export default function ExamsPage() {
               </tbody>
             </table>
           </div>
-        ) : tab === "paper_marking" ? (
+        ) : (
           /* ── PAPER MARKING TAB ── */
           <div className="bg-white rounded-xl border border-blue-100 overflow-hidden">
             <table className="w-full text-sm">
@@ -540,6 +432,7 @@ export default function ExamsPage() {
                       key={a._id}
                       className={`border-b border-blue-50 hover:bg-blue-50 ${busy === a._id ? "opacity-60" : ""}`}
                     >
+                      {/* Subject */}
                       <td className="px-5 py-3">
                         <p className="text-xs font-mono text-blue-400">
                           {a.subjectId?.code}
@@ -548,6 +441,8 @@ export default function ExamsPage() {
                           {a.subjectId?.name}
                         </p>
                       </td>
+
+                      {/* First Marker — the assigned lecturer */}
                       <td className="px-5 py-3">
                         <p className="text-sm text-blue-700">
                           {a.lecturerId?.name || (
@@ -562,6 +457,8 @@ export default function ExamsPage() {
                           </p>
                         )}
                       </td>
+
+                      {/* First Marking Status */}
                       <td className="px-5 py-3">
                         <StatusSelect
                           value={
@@ -574,6 +471,8 @@ export default function ExamsPage() {
                           colors={MARKING_STATUS_COLORS}
                         />
                       </td>
+
+                      {/* Second Marker Name */}
                       <td className="px-5 py-3 min-w-[160px]">
                         <EditableCell
                           value={pmVal(a, "secondMarkerName")}
@@ -583,6 +482,8 @@ export default function ExamsPage() {
                           placeholder="Add second marker"
                         />
                       </td>
+
+                      {/* Second Marker Email */}
                       <td className="px-5 py-3 min-w-[180px]">
                         <EditableCell
                           value={pmVal(a, "secondMarkerEmail")}
@@ -593,6 +494,8 @@ export default function ExamsPage() {
                           type="email"
                         />
                       </td>
+
+                      {/* Second Marking Status */}
                       <td className="px-5 py-3">
                         <StatusSelect
                           value={
@@ -611,223 +514,8 @@ export default function ExamsPage() {
               </tbody>
             </table>
           </div>
-        ) : (
-          /* ── EXAM TIMETABLE TAB ── */
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl border border-blue-100 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-3 border-b border-blue-100 bg-blue-50">
-                <p className="text-xs text-blue-400 font-medium">
-                  Exam schedule for the selected batch and semester
-                </p>
-                {canManageTimetable && (
-                  <button
-                    onClick={() => {
-                      setEditingEntry(null);
-                      setShowTimetableModal(true);
-                    }}
-                    className="text-xs font-medium text-white bg-blue-900 hover:bg-blue-800 px-3 py-1.5 rounded-lg"
-                  >
-                    + Add Exam
-                  </button>
-                )}
-              </div>
-
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-blue-100">
-                    <th className="text-left px-5 py-3 text-xs text-blue-400 font-medium">
-                      Subject
-                    </th>
-                    <th className="text-left px-5 py-3 text-xs text-blue-400 font-medium">
-                      Date
-                    </th>
-                    <th className="text-left px-5 py-3 text-xs text-blue-400 font-medium">
-                      Time
-                    </th>
-                    <th className="text-left px-5 py-3 text-xs text-blue-400 font-medium">
-                      Venue
-                    </th>
-                    <th className="text-left px-5 py-3 text-xs text-blue-400 font-medium">
-                      Type
-                    </th>
-                    {canManageTimetable && (
-                      <th className="text-left px-5 py-3 text-xs text-blue-400 font-medium"></th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {loadingTimetable ? (
-                    <tr>
-                      <td
-                        colSpan={6}
-                        className="px-5 py-8 text-center text-blue-400"
-                      >
-                        Loading timetable...
-                      </td>
-                    </tr>
-                  ) : timetableEntries.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={6}
-                        className="px-5 py-8 text-center text-blue-400"
-                      >
-                        No exam timetable published yet for this semester
-                      </td>
-                    </tr>
-                  ) : (
-                    timetableEntries.map((entry) => (
-                      <tr
-                        key={entry._id}
-                        className="border-b border-blue-50 hover:bg-blue-50"
-                      >
-                        <td className="px-5 py-3">
-                          <p className="text-xs font-mono text-blue-400">
-                            {entry.subject?.code}
-                          </p>
-                          <p className="text-sm font-medium text-blue-800">
-                            {entry.subject?.name}
-                          </p>
-                        </td>
-                        <td className="px-5 py-3 text-blue-700">
-                          {new Date(entry.examDate).toLocaleDateString(
-                            "en-GB",
-                            {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            },
-                          )}
-                        </td>
-                        <td className="px-5 py-3 text-blue-700">
-                          {entry.startTime} – {entry.endTime}
-                        </td>
-                        <td className="px-5 py-3 text-blue-700">
-                          {entry.venue || "-"}
-                        </td>
-                        <td className="px-5 py-3">
-                          <span className="text-xs px-2 py-1 rounded-full font-medium bg-blue-100 text-blue-700">
-                            {EXAM_TYPE_LABELS[entry.examType] || entry.examType}
-                          </span>
-                        </td>
-                        {canManageTimetable && (
-                          <td className="px-5 py-3">
-                            <div className="flex gap-3">
-                              <button
-                                onClick={() => {
-                                  setEditingEntry(entry);
-                                  setShowTimetableModal(true);
-                                }}
-                                className="text-xs font-medium text-blue-600 hover:text-blue-800"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => handleDeleteEntry(entry._id)}
-                                className="text-xs font-medium text-red-500 hover:text-red-700"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        )}
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* ── Comments section (24h expiry) ── */}
-            <div className="bg-white rounded-xl border border-blue-100 p-5">
-              <div className="flex items-center justify-between mb-1">
-                <h3 className="text-sm font-semibold text-blue-800">
-                  Student Feedback
-                </h3>
-                <span className="text-[11px] text-blue-300">
-                  Comments auto-clear after 24h
-                </span>
-              </div>
-              <p className="text-xs text-blue-400 mb-4">
-                Students can flag clashes, venue issues, or ask questions about
-                this exam schedule.
-              </p>
-
-              {isStudent && (
-                <div className="flex gap-2 mb-5">
-                  <input
-                    type="text"
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handlePostComment();
-                    }}
-                    placeholder="Add feedback about this exam timetable..."
-                    maxLength={500}
-                    className="flex-1 border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"
-                  />
-                  <button
-                    onClick={handlePostComment}
-                    disabled={postingComment || !commentText.trim()}
-                    className="text-sm font-medium text-white bg-blue-900 hover:bg-blue-800 px-4 py-2 rounded-lg disabled:opacity-50"
-                  >
-                    {postingComment ? "Posting..." : "Post"}
-                  </button>
-                </div>
-              )}
-
-              <div className="space-y-3 max-h-80 overflow-y-auto">
-                {loadingComments ? (
-                  <p className="text-sm text-blue-400">Loading comments...</p>
-                ) : comments.length === 0 ? (
-                  <p className="text-sm text-blue-300">No feedback yet.</p>
-                ) : (
-                  comments.map((c) => (
-                    <div
-                      key={c._id}
-                      className="flex gap-3 border-b border-blue-50 pb-3 last:border-0"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700 flex-shrink-0">
-                        {c.studentName?.charAt(0)?.toUpperCase() || "?"}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs font-medium text-blue-800">
-                            {c.studentName}
-                          </p>
-                          <p className="text-[11px] text-blue-300">
-                            {timeAgo(c.createdAt)}
-                          </p>
-                        </div>
-                        <p className="text-sm text-blue-700 mt-0.5">
-                          {c.message}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
         )}
       </div>
-
-      {showTimetableModal && (
-        <ExamTimetableModal
-          entry={editingEntry}
-          batchId={selBatch}
-          semester={semesterNumber}
-          assignments={assignments}
-          onClose={() => {
-            setShowTimetableModal(false);
-            setEditingEntry(null);
-          }}
-          onSaved={() => {
-            setShowTimetableModal(false);
-            setEditingEntry(null);
-            loadTimetable();
-          }}
-        />
-      )}
     </div>
   );
 }

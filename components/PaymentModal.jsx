@@ -20,7 +20,7 @@ export default function PaymentModal({
     subject: payment?.subject?._id || "",
     semester: payment?.semester || "",
     hoursTaught: payment?.hoursTaught || "",
-    ratePerHour: payment?.ratePerHour || "",
+    ratePerHour: payment?.ratePerHour ?? "1500",
     amount: payment?.amount || "",
     status: payment?.status || "pending",
     referenceNo: payment?.referenceNo || "",
@@ -29,16 +29,54 @@ export default function PaymentModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [assignments, setAssignments] = useState([]);
+  const [loadingHours, setLoadingHours] = useState(false);
 
-  // Auto-calculate amount unless user manually edited it
-  const [amountTouched, setAmountTouched] = useState(false);
   useEffect(() => {
-    if (!amountTouched) {
-      const computed =
-        Number(form.hoursTaught || 0) * Number(form.ratePerHour || 0);
-      setForm((prev) => ({ ...prev, amount: computed || "" }));
+    if (!form.lecturer || !form.batch || !form.semester || !form.subject) {
+      setForm((prev) => ({ ...prev, hoursTaught: "", amount: "" }));
+      return;
     }
-  }, [form.hoursTaught, form.ratePerHour, amountTouched]);
+
+    async function loadLoggedHours() {
+      setLoadingHours(true);
+      try {
+        const res = await fetch(
+          `/api/lecture-logs?batchId=${form.batch}&semesterNumber=${form.semester}&taughtBy=${form.lecturer}`,
+          { credentials: "include" },
+        );
+        const data = await res.json();
+        const logs = data.logs || [];
+        const totalHours = logs.reduce((sum, log) => {
+          const subjectId =
+            log.subjectAssignmentId?.subjectId?._id ||
+            log.subjectAssignmentId?.subjectId;
+          return subjectId?.toString() === form.subject.toString()
+            ? sum + log.durationHours
+            : sum;
+        }, 0);
+
+        const rate = Number(form.ratePerHour || 1500);
+        setForm((prev) => ({
+          ...prev,
+          hoursTaught: totalHours,
+          amount: totalHours ? totalHours * rate : "",
+        }));
+      } catch (err) {
+        console.error("Failed to load logged hours", err);
+        setForm((prev) => ({ ...prev, hoursTaught: "", amount: "" }));
+      } finally {
+        setLoadingHours(false);
+      }
+    }
+
+    loadLoggedHours();
+  }, [
+    form.lecturer,
+    form.batch,
+    form.semester,
+    form.subject,
+    form.ratePerHour,
+  ]);
 
   useEffect(() => {
     if (!form.lecturer) {
@@ -286,9 +324,14 @@ export default function PaymentModal({
                 type="number"
                 min="0"
                 value={form.hoursTaught}
-                onChange={(e) => updateField("hoursTaught", e.target.value)}
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
+                readOnly
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-gray-50"
               />
+              {loadingHours && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Calculating hours from logged lectures...
+                </p>
+              )}
             </div>
             <div>
               <label className="text-xs font-medium text-gray-600 mb-1 block">
@@ -310,11 +353,8 @@ export default function PaymentModal({
                 type="number"
                 min="0"
                 value={form.amount}
-                onChange={(e) => {
-                  setAmountTouched(true);
-                  updateField("amount", e.target.value);
-                }}
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
+                readOnly
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-gray-50"
               />
             </div>
           </div>

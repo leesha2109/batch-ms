@@ -40,6 +40,9 @@ const UserSchema = new mongoose.Schema(
   address:     { type: String, default: '' },
   dateOfBirth: { type: Date,   default: null },
   enrolledAt:  { type: Date,   default: null },
+  profilePicture: { type: String, default: "" }, 
+  phone: { type: String, trim: true },
+  bio: { type: String, trim: true, maxlength: 300 },
   },
   { timestamps: true },
 );

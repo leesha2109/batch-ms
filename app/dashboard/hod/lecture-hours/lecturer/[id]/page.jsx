@@ -9,7 +9,7 @@ const ROLE_COLORS = {
   visiting_lecturer: "bg-orange-100 text-orange-700",
 };
 const ROLE_LABELS = {
-  lecturer: "Permanent",
+  lecturer: "Confirmed",
   visiting_lecturer: "Visiting",
 };
 
