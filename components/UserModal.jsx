@@ -1,52 +1,54 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useRef } from 'react'
-import { useBatches } from '@/hooks/useBatches'
-import { useUsers }   from '@/hooks/useUsers'
+import { useState, useEffect, useRef } from "react";
+import toast from "react-hot-toast";
+import { useBatches } from "@/hooks/useBatches";
+import { useUsers } from "@/hooks/useUsers";
 
 const STAFF_ROLES = [
-  { value: 'coordinator',       label: 'Batch Coordinator' },
-  { value: 'lecturer',          label: 'Lecturer' },
-  { value: 'visiting_lecturer', label: 'Visiting Lecturer' },
-]
+  { value: "coordinator", label: "Batch Coordinator" },
+  { value: "lecturer", label: "Lecturer" },
+  { value: "visiting_lecturer", label: "Visiting Lecturer" },
+];
 
 function CoordinatorSelect({ lecturers, value, onChange }) {
-  const [open,   setOpen]   = useState(false)
-  const [search, setSearch] = useState('')
-  const ref = useRef(null)
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const ref = useRef(null);
 
-  const selected = lecturers.find(l => l._id === value)
+  const selected = lecturers.find((l) => l._id === value);
 
-  const filtered = lecturers.filter(l =>
-    l.name.toLowerCase().includes(search.toLowerCase()) ||
-    l.email.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = lecturers.filter(
+    (l) =>
+      l.name.toLowerCase().includes(search.toLowerCase()) ||
+      l.email.toLowerCase().includes(search.toLowerCase()),
+  );
 
   useEffect(() => {
     function handleClickOutside(e) {
       if (ref.current && !ref.current.contains(e.target)) {
-        setOpen(false)
-        setSearch('')
+        setOpen(false);
+        setSearch("");
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div className="relative" ref={ref}>
       {/* Trigger button */}
       <button
         type="button"
-        onClick={() => setOpen(prev => !prev)}
+        onClick={() => setOpen((prev) => !prev)}
         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-left focus:outline-none focus:ring-2 focus:ring-gray-900 flex items-center justify-between"
       >
-        <span className={selected ? 'text-gray-800' : 'text-gray-400'}>
+        <span className={selected ? "text-gray-800" : "text-gray-400"}>
           {selected
             ? `${selected.name} (${selected.email})`
-            : '— Select coordinator —'}
+            : "— Select coordinator —"}
         </span>
-        <span className="text-gray-400 text-xs">{open ? '▲' : '▼'}</span>
+        <span className="text-gray-400 text-xs">{open ? "▲" : "▼"}</span>
       </button>
 
       {/* Dropdown panel */}
@@ -57,7 +59,7 @@ function CoordinatorSelect({ lecturers, value, onChange }) {
             <input
               type="text"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Type to search..."
               autoFocus
               className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
@@ -67,203 +69,278 @@ function CoordinatorSelect({ lecturers, value, onChange }) {
           {/* Options list */}
           <div className="max-h-48 overflow-y-auto">
             <div
-              onClick={() => { onChange(''); setOpen(false); setSearch('') }}
+              onClick={() => {
+                onChange("");
+                setOpen(false);
+                setSearch("");
+              }}
               className="px-3 py-2 text-sm text-gray-400 cursor-pointer hover:bg-gray-50"
             >
               — None —
             </div>
             {filtered.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-gray-400">No results found</div>
-            ) : filtered.map(l => (
-              <div
-                key={l._id}
-                onClick={() => { onChange(l._id); setOpen(false); setSearch('') }}
-                className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 flex items-center justify-between
-                  ${value === l._id ? 'bg-gray-50 font-medium text-gray-900' : 'text-gray-700'}`}
-              >
-                <span>{l.name}</span>
-                <span className="text-xs text-gray-400">{l.email}</span>
+              <div className="px-3 py-2 text-sm text-gray-400">
+                No results found
               </div>
-            ))}
+            ) : (
+              filtered.map((l) => (
+                <div
+                  key={l._id}
+                  onClick={() => {
+                    onChange(l._id);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                  className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 flex items-center justify-between
+                  ${value === l._id ? "bg-gray-50 font-medium text-gray-900" : "text-gray-700"}`}
+                >
+                  <span>{l.name}</span>
+                  <span className="text-xs text-gray-400">{l.email}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
 
 export default function UserModal({ user, onClose, onSaved, mode }) {
-  const isEditing = !!(user && user._id)
+  const isEditing = !!(user && user._id);
 
-  const resolvedMode = mode || (user?.role === 'student' ? 'student' : 'staff')
-  const isStudentMode = resolvedMode === 'student'
+  const resolvedMode = mode || (user?.role === "student" ? "student" : "staff");
+  const isStudentMode = resolvedMode === "student";
 
-  const { batches } = useBatches()
-  const { users: lecturers } = useUsers('lecturer')
+  const { batches } = useBatches();
+  const { users: lecturers } = useUsers("lecturer");
 
   const [form, setForm] = useState({
-    name:          '',
-    email:         '',
-    password:      '',
-    role:          'lecturer',
-    batchId:       '',
-    coordinatorId: '',
-    isActive:      true,
-    studentId:     '',
-  })
-  const [loading, setLoading] = useState(false)
-  const [error,   setError]   = useState('')
+    name: "",
+    email: "",
+    password: "",
+    role: "lecturer",
+    batchId: "",
+    coordinatorId: "",
+    isActive: true,
+    studentId: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (user) {
       setForm({
-        name:          user.name          || '',
-        email:         user.email         || '',
-        password:      '',
-        role:          user.role          || (isStudentMode ? 'student' : 'lecturer'),
-        batchId:       user.batchId?._id  || user.batchId  || '',
-        coordinatorId: user.coordinatorId?._id || user.coordinatorId || '',
-        isActive:      user.isActive ?? true,
-        studentId:     user.studentId     || '',
-      })
+        name: user.name || "",
+        email: user.email || "",
+        password: "",
+        role: user.role || (isStudentMode ? "student" : "lecturer"),
+        batchId: user.batchId?._id || user.batchId || "",
+        coordinatorId: user.coordinatorId?._id || user.coordinatorId || "",
+        isActive: user.isActive ?? true,
+        studentId: user.studentId || "",
+      });
     } else {
-      setForm(prev => ({
+      setForm((prev) => ({
         ...prev,
-        role: isStudentMode ? 'student' : 'lecturer',
-      }))
+        role: isStudentMode ? "student" : "lecturer",
+      }));
     }
-  }, [user, isStudentMode])
+  }, [user, isStudentMode]);
 
   function handleChange(e) {
-    const { name, value, type, checked } = e.target
-    setForm(prev => ({
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }))
+      [name]: type === "checkbox" ? checked : value,
+    }));
   }
 
   async function handleSubmit(e) {
-    e.preventDefault()
-    setError('')
+    e.preventDefault();
+    setError("");
 
     if (isStudentMode && !form.batchId) {
-      setError('Please select a batch for the student')
-      return
+      setError("Please select a batch for the student");
+      return;
     }
-    if (!isStudentMode && form.role === 'coordinator' && !form.batchId) {
-      setError('Please select a batch for the coordinator')
-      return
+    if (!isStudentMode && form.role === "coordinator" && !form.batchId) {
+      setError("Please select a batch for the coordinator");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
       const url = isEditing
-        ? (isStudentMode ? `/api/students/${user._id}` : `/api/users/${user._id}`)
-        : (isStudentMode ? '/api/students'              : '/api/users')
+        ? isStudentMode
+          ? `/api/students/${user._id}`
+          : `/api/users/${user._id}`
+        : isStudentMode
+          ? "/api/students"
+          : "/api/users";
 
-      const method = isEditing ? 'PATCH' : 'POST'
+      const method = isEditing ? "PATCH" : "POST";
 
-      const body = { ...form }
-      if (isEditing && !body.password) delete body.password
+      const body = { ...form };
+      if (isEditing && !body.password) delete body.password;
 
       if (isStudentMode) {
-        delete body.role
+        delete body.role;
       } else {
-        delete body.studentId
-        if (body.role !== 'coordinator')       delete body.batchId
-        if (body.role !== 'visiting_lecturer') delete body.coordinatorId
+        delete body.studentId;
+        if (body.role !== "coordinator") delete body.batchId;
+        if (body.role !== "visiting_lecturer") delete body.coordinatorId;
       }
 
-      const res  = await fetch(url, {
+      const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(body)
-      })
-      const data = await res.json()
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
 
-      if (!data.success) { setError(data.message); return }
+      if (!data.success) {
+        setError(data.message);
+        return;
+      }
 
-      onSaved()
-      onClose()
+      if (!isEditing) {
+        toast.success(`Welcome email sent to ${form.email}`);
+      } else {
+        toast.success("Saved successfully");
+      }
+
+      onSaved();
+      onClose();
     } catch {
-      setError('Something went wrong. Please try again.')
+      setError("Something went wrong. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
-
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white">
           <h2 className="text-base font-semibold text-gray-800">
             {isEditing
-              ? (isStudentMode ? 'Edit student' : 'Edit user')
-              : (isStudentMode ? 'Enroll new student' : 'Add new lecturer')}
+              ? isStudentMode
+                ? "Edit student"
+                : "Edit user"
+              : isStudentMode
+                ? "Enroll new student"
+                : "Add new lecturer"}
           </h2>
-          <button onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+          >
+            ✕
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
-
           {/* ── STAFF MODE ── */}
           {!isStudentMode && (
             <>
               <div>
-                <label className="text-xs text-gray-500 block mb-1">Full name</label>
-                <input name="name" value={form.name} onChange={handleChange} required
+                <label className="text-xs text-gray-500 block mb-1">
+                  Full name
+                </label>
+                <input
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  required
                   placeholder="e.g. Kasun Perera"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"/>
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-500 block mb-1">Email address</label>
-                <input name="email" type="email" value={form.email} onChange={handleChange} required
-                  placeholder="kasun@university.lk"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"/>
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
               </div>
 
               <div>
                 <label className="text-xs text-gray-500 block mb-1">
-                  {isEditing ? 'New password (leave blank to keep current)' : 'Password'}
+                  Email address
                 </label>
-                <input name="password" type="password" value={form.password} onChange={handleChange}
-                  required={!isEditing} placeholder="Minimum 6 characters"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"/>
+                <input
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="kasun@university.lk"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">
+                  {isEditing
+                    ? "New password (leave blank to keep current)"
+                    : "Password"}
+                </label>
+                <input
+                  name="password"
+                  type="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder={
+                    isEditing
+                      ? "Minimum 6 characters"
+                      : "Leave blank to use the default lecturer password"
+                  }
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
+                {!isEditing && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    Leave empty to assign the common lecturer password.
+                  </p>
+                )}
               </div>
 
               <div>
                 <label className="text-xs text-gray-500 block mb-1">Role</label>
-                <select name="role" value={form.role} onChange={handleChange}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
-                  {STAFF_ROLES.map(r => (
-                    <option key={r.value} value={r.value}>{r.label}</option>
+                <select
+                  name="role"
+                  value={form.role}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                >
+                  {STAFF_ROLES.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {r.label}
+                    </option>
                   ))}
                 </select>
               </div>
 
               {/* Batch — only for coordinators */}
-              {form.role === 'coordinator' && (
+              {form.role === "coordinator" && (
                 <div>
                   <label className="text-xs text-gray-500 block mb-1">
                     Assign to batch (required)
                   </label>
-                  <select name="batchId" value={form.batchId} onChange={handleChange} required
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                  <select
+                    name="batchId"
+                    value={form.batchId}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  >
                     <option value="">— Select batch —</option>
-                    {batches.map(b => (
-                      <option key={b._id} value={b._id}>{b.name} ({b.programme})</option>
+                    {batches.map((b) => (
+                      <option key={b._id} value={b._id}>
+                        {b.name} ({b.programme})
+                      </option>
                     ))}
                   </select>
                 </div>
               )}
 
               {/* Coordinator — only for visiting lecturers */}
-              {form.role === 'visiting_lecturer' && (
+              {form.role === "visiting_lecturer" && (
                 <div>
                   <label className="text-xs text-gray-500 block mb-1">
                     Coordinator (university lecturer responsible)
@@ -271,15 +348,23 @@ export default function UserModal({ user, onClose, onSaved, mode }) {
                   <CoordinatorSelect
                     lecturers={lecturers}
                     value={form.coordinatorId}
-                    onChange={(id) => setForm(prev => ({ ...prev, coordinatorId: id }))}
+                    onChange={(id) =>
+                      setForm((prev) => ({ ...prev, coordinatorId: id }))
+                    }
                   />
                 </div>
               )}
 
               {isEditing && (
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" name="isActive" id="isActive"
-                    checked={form.isActive} onChange={handleChange} className="w-4 h-4"/>
+                  <input
+                    type="checkbox"
+                    name="isActive"
+                    id="isActive"
+                    checked={form.isActive}
+                    onChange={handleChange}
+                    className="w-4 h-4"
+                  />
                   <label htmlFor="isActive" className="text-sm text-gray-600">
                     Account is active
                   </label>
@@ -293,51 +378,106 @@ export default function UserModal({ user, onClose, onSaved, mode }) {
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-gray-500 block mb-1">Full name</label>
-                  <input name="name" value={form.name} onChange={handleChange} required
+                  <label className="text-xs text-gray-500 block mb-1">
+                    Full name
+                  </label>
+                  <input
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    required
                     placeholder="Kasun Perera"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"/>
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 block mb-1">Student ID</label>
-                  <input name="studentId" value={form.studentId} onChange={handleChange}
+                  <label className="text-xs text-gray-500 block mb-1">
+                    Student ID
+                  </label>
+                  <input
+                    name="studentId"
+                    value={form.studentId}
+                    onChange={handleChange}
                     placeholder="BSc/2022/001"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"/>
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  />
                 </div>
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-500 block mb-1">Email</label>
-                <input name="email" type="email" value={form.email} onChange={handleChange} required
-                  placeholder="kasun@university.lk"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"/>
               </div>
 
               <div>
                 <label className="text-xs text-gray-500 block mb-1">
-                  {isEditing ? 'New password (leave blank to keep current)' : 'Password'}
+                  Email
                 </label>
-                <input name="password" type="password" value={form.password} onChange={handleChange}
-                  required={!isEditing} placeholder="Minimum 6 characters"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"/>
+                <input
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="kasun@university.lk"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
               </div>
 
               <div>
-                <label className="text-xs text-gray-500 block mb-1">Batch (required)</label>
-                <select name="batchId" value={form.batchId} onChange={handleChange} required
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                <label className="text-xs text-gray-500 block mb-1">
+                  {isEditing
+                    ? "New password (leave blank to keep current)"
+                    : "Password"}
+                </label>
+                <input
+                  name="password"
+                  type="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder={
+                    isEditing
+                      ? "Minimum 6 characters"
+                      : "Leave blank to use the default student password"
+                  }
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
+                {!isEditing && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    Leave empty to assign the common student password.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">
+                  Batch (required)
+                </label>
+                <select
+                  name="batchId"
+                  value={form.batchId}
+                  onChange={handleChange}
+                  required
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                >
                   <option value="">— Select batch —</option>
-                  {batches.map(b => (
-                    <option key={b._id} value={b._id}>{b.name} ({b.programme})</option>
+                  {batches.map((b) => (
+                    <option key={b._id} value={b._id}>
+                      {b.name} ({b.programme})
+                    </option>
                   ))}
                 </select>
               </div>
 
               {isEditing && (
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" name="isActive" id="isActiveStudent"
-                    checked={form.isActive} onChange={handleChange} className="w-4 h-4"/>
-                  <label htmlFor="isActiveStudent" className="text-sm text-gray-600">
+                  <input
+                    type="checkbox"
+                    name="isActive"
+                    id="isActiveStudent"
+                    checked={form.isActive}
+                    onChange={handleChange}
+                    className="w-4 h-4"
+                  />
+                  <label
+                    htmlFor="isActiveStudent"
+                    className="text-sm text-gray-600"
+                  >
                     Account is active
                   </label>
                 </div>
@@ -346,25 +486,35 @@ export default function UserModal({ user, onClose, onSaved, mode }) {
           )}
 
           {error && (
-            <div className="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg">{error}</div>
+            <div className="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg">
+              {error}
+            </div>
           )}
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose}
-              className="flex-1 border border-gray-200 text-gray-600 py-2 rounded-lg text-sm hover:bg-gray-50">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 border border-gray-200 text-gray-600 py-2 rounded-lg text-sm hover:bg-gray-50"
+            >
               Cancel
             </button>
-            <button type="submit" disabled={loading}
-              className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-sm hover:bg-gray-700 disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-sm hover:bg-gray-700 disabled:opacity-50"
+            >
               {loading
-                ? 'Saving...'
+                ? "Saving..."
                 : isEditing
-                  ? 'Save changes'
-                  : (isStudentMode ? 'Enroll student' : 'Create user')}
+                  ? "Save changes"
+                  : isStudentMode
+                    ? "Enroll student"
+                    : "Create user"}
             </button>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }

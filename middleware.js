@@ -15,7 +15,7 @@ export default withAuth(
     }
     if (
       path.startsWith("/dashboard/coordinator") &&
-      token?.role !== "coordinator"
+      !["coordinator", "hod"].includes(token?.role)
     ) {
       return NextResponse.redirect(new URL("/unauthorized", req.url));
     }

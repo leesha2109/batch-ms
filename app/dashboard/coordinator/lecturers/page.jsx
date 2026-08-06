@@ -370,155 +370,87 @@ export default function LecturersPage() {
           </div>
         </div>
 
-        {/* Table */}
         {loading ? (
-          <p className="text-sm text-gray-400">Loading lecturers...</p>
+          <div className="bg-white rounded-xl border border-gray-100 p-6 text-center">
+            <p className="text-sm text-gray-400">Loading lecturers...</p>
+          </div>
+        ) : lecturers.length === 0 ? (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 text-center">
+            <p className="text-sm text-gray-400">No lecturers found</p>
+          </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">
-                    Lecturer
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">
-                    Type
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">
-                    Status
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs text-gray-400 font-medium">
-                    Joined
-                  </th>
-                  <th className="px-5 py-3"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {lecturers.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-5 py-10 text-center text-gray-400"
-                    >
-                      No lecturers found
-                    </td>
-                  </tr>
-                ) : (
-                  lecturers.map((l) => (
-                    <tr
-                      key={l._id}
-                      className="border-b border-gray-50 hover:bg-gray-50"
-                    >
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600">
-                            {l.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-800">
-                              {l.name}
-                            </p>
-                            <p className="text-xs text-gray-400">{l.email}</p>
-                            {l.role === "visiting_lecturer" && (
-                              <p className="text-[11px] text-gray-500 mt-0.5">
-                                Coordinator: {l.coordinatorId?.name || "—"}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3">
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full font-medium
-                        ${
-                          l.role === "visiting_lecturer"
-                            ? "bg-orange-100 text-orange-700"
-                            : "bg-green-100 text-green-700"
-                        }`}
-                        >
-                          {l.role === "visiting_lecturer"
-                            ? "Visiting"
-                            : "Confirmed"}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {lecturers.map((lecturer) => (
+              <div
+                key={lecturer._id}
+                className="bg-white border border-gray-100 rounded-xl p-4 flex items-center justify-between hover:shadow-md transition-all"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-semibold">
+                    {lecturer.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-800">{lecturer.name}</p>
+                    <p className="text-xs text-gray-500">{lecturer.email}</p>
+                    <div className="flex gap-1 mt-1">
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium
+                        ${lecturer.role === "visiting_lecturer" ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-700"}`}
+                      >
+                        {lecturer.role === "visiting_lecturer"
+                          ? "Visiting"
+                          : "Confirmed"}
+                      </span>
+                      {lecturer.isActive ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+                          Active
                         </span>
-                      </td>
-                      <td className="px-5 py-3">
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full font-medium
-                        ${
-                          l.isActive
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-500"
-                        }`}
-                        >
-                          {l.isActive ? "Active" : "Inactive"}
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">
+                          Inactive
                         </span>
-                      </td>
-                      <td className="px-5 py-3 text-gray-400 text-xs">
-                        {l.createdAt
-                          ? new Date(l.createdAt).toLocaleDateString()
-                          : "—"}
-                      </td>
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-3 justify-end">
-                          <button
-                            onClick={() => setViewLecturer(l)}
-                            className="text-xs text-blue-600 hover:underline"
-                          >
-                            View profile
-                          </button>
-                          <button
-                            onClick={() => handleEdit(l)}
-                            className="text-xs text-blue-600 hover:underline"
-                          >
-                            Edit
-                          </button>
-                          {l.isActive && (
-                            <button
-                              onClick={() => handleDeactivate(l._id)}
-                              disabled={deletingId === l._id}
-                              className="text-xs text-red-400 hover:underline disabled:opacity-50"
-                            >
-                              {deletingId === l._id ? "..." : "Deactivate"}
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setViewLecturer(lecturer)}
+                  className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                >
+                  View
+                </button>
+              </div>
+            ))}
           </div>
         )}
+
+        {viewLecturer && (
+          <LecturerProfile
+            lecturer={viewLecturer}
+            onClose={() => setViewLecturer(null)}
+            onUpdate={() => {
+              fetchLecturers(activeTab, search);
+              setViewLecturer(null);
+            }}
+          />
+        )}
+
+        {showModal && (
+          <UserModal
+            user={editingUser}
+            userRole="lecturer"
+            onClose={() => {
+              setShowModal(false);
+              setEditingUser(null);
+            }}
+            onSaved={() => {
+              setShowModal(false);
+              setEditingUser(null);
+              fetchLecturers(activeTab, search);
+            }}
+          />
+        )}
       </div>
-
-      {/* Add / edit lecturer — same UserModal used in Users page, staff mode */}
-      {showModal && (
-        <UserModal
-          user={editingUser}
-          mode="staff"
-          onClose={() => {
-            setShowModal(false);
-            setEditingUser(null);
-          }}
-          onSaved={() => {
-            fetchLecturers(activeTab, search);
-            setShowModal(false);
-            setEditingUser(null);
-          }}
-        />
-      )}
-
-      {viewLecturer && (
-        <LecturerProfile
-          lecturer={viewLecturer}
-          onClose={() => setViewLecturer(null)}
-          onUpdate={() => {
-            fetchLecturers(activeTab, search);
-            setViewLecturer(null);
-          }}
-        />
-      )}
     </div>
   );
 }

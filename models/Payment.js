@@ -19,7 +19,7 @@ const PaymentSchema = new mongoose.Schema(
     },
     semester: { type: Number, required: true },
     hoursTaught: { type: Number, required: true, default: 0 },
-    ratePerHour: { type: Number, required: true, default: 0 },
+    ratePerHour: { type: Number, required: true, default: 1500 },
     amount: { type: Number, required: true, default: 0 },
     status: {
       type: String,
@@ -30,7 +30,7 @@ const PaymentSchema = new mongoose.Schema(
     referenceNo: { type: String, trim: true },
     remarks: { type: String, trim: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.models.Payment ||

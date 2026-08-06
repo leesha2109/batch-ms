@@ -20,6 +20,19 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Email setup
+
+This app sends welcome emails for new students and lecturers. Set these environment variables before running:
+
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `EMAIL_FROM`
+- `NEXTAUTH_URL`
+- `DEFAULT_STUDENT_PASSWORD` (optional, defaults to `student123`)
+- `DEFAULT_LECTURER_PASSWORD` (optional, defaults to `lecturer123`)
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

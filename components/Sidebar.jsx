@@ -27,21 +27,24 @@ const hodLinks = [
 const coordinatorLinks = [
   { label: "Dashboard", href: "/dashboard/coordinator", icon: "🏠" },
   { section: "Academic" },
-  { label: "My Batches", href: "/dashboard/coordinator/batches", icon: "🎓" },
+  { label: "Batches", href: "/dashboard/coordinator/batches", icon: "🎓" },
   { label: "Timetable", href: "/dashboard/coordinator/timetable", icon: "📅" },
-  { label: "Subjects", href: "/dashboard/coordinator/subjects", icon: "📚" },
+  { label: "Courses", href: "/dashboard/coordinator/subjects", icon: "📚" },
   {
     label: "Lecture Hours",
     href: "/dashboard/coordinator/lecture-hours",
     icon: "🕐",
   },
-  { label: "Results Status", href: "/dashboard/coordinator/marks", icon: "�" },
+  { label: "Results Status", href: "/dashboard/coordinator/marks", icon: "📊" },
+  { label: "Exams", href: "/dashboard/coordinator/exams", icon: "📝" },
   { label: "Projects", href: "/dashboard/coordinator/projects", icon: "🔬" },
   { section: "People" },
   { label: "Users", href: "/dashboard/coordinator/users", icon: "👥" },
+  { label: "Lecturers", href: "/dashboard/coordinator/lecturers", icon: "👨‍🏫" },
   { label: "Students", href: "/dashboard/coordinator/students", icon: "👨‍🎓" },
-  { section: "Finance" },
+  { section: "Administration" },
   { label: "Payments", href: "/dashboard/coordinator/payments", icon: "💰" },
+  { label: "Settings", href: "/dashboard/coordinator/settings", icon: "⚙️" },
 ];
 
 const lecturerLinks = [
