@@ -62,6 +62,7 @@ const studentLinks = [
   { label: "Dashboard", href: "/dashboard/student", icon: "🏠" },
   { label: "My Marks", href: "/dashboard/student/marks", icon: "📝" },
   { label: "Subjects", href: "/dashboard/student/subjects", icon: "📚" },
+  { label: "Timetable", href: "/dashboard/student/timetable", icon: "📅" },
   {
     label: "Lecture Hours",
     href: "/dashboard/student/lecture-hours",
