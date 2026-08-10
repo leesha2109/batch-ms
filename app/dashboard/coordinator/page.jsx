@@ -4,22 +4,15 @@ import { useState, useEffect } from "react";
 import { FileText, FileType, Download } from "lucide-react";
 import TopHeader from "@/components/TopHeader";
 import StatCard from "@/components/StatCard";
-import PendingApprovals from "@/components/PendingApprovals";
-import ApprovalModal from "@/components/ApprovalModal";
 
 export default function CoordinatorDashboard() {
   const [totalStudents, setTotalStudents] = useState(0);
   const [totalLecturers, setTotalLecturers] = useState(0);
   const [totalVisiting, setTotalVisiting] = useState(0);
-  const [pendingRequests, setPendingRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [showApprovalModal, setShowApprovalModal] = useState(false);
 
   useEffect(() => {
     async function loadDashboardData() {
       try {
-        // Fetch stats from a new endpoint or call multiple endpoints
         const statsRes = await fetch("/api/dashboard", {
           credentials: "include",
         });
@@ -28,18 +21,6 @@ export default function CoordinatorDashboard() {
           setTotalStudents(data.totalStudents || 0);
           setTotalLecturers(data.totalLecturers || 0);
           setTotalVisiting(data.totalVisiting || 0);
-        }
-
-        // Fetch pending requests
-        const requestsRes = await fetch("/api/request-access", {
-          credentials: "include",
-        });
-        if (requestsRes.ok) {
-          const data = await requestsRes.json();
-          const filtered = (data.requests || []).filter(
-            (r) => r.status === "pending",
-          );
-          setPendingRequests(filtered);
         }
       } catch (err) {
         console.error("Failed to load dashboard data", err);
@@ -50,53 +31,6 @@ export default function CoordinatorDashboard() {
 
     loadDashboardData();
   }, []);
-
-  function handleAddUser(request) {
-    setSelectedRequest(request);
-    setShowApprovalModal(true);
-  }
-
-  function handleReject(id) {
-    setPendingRequests((prev) => prev.filter((r) => r._id !== id));
-  }
-
-  async function handleApproved() {
-    setShowApprovalModal(false);
-    setSelectedRequest(null);
-
-    // Refresh stats
-    try {
-      const statsRes = await fetch("/api/dashboard", {
-        credentials: "include",
-      });
-      if (statsRes.ok) {
-        const data = await statsRes.json();
-        setTotalStudents(data.totalStudents || 0);
-        setTotalLecturers(data.totalLecturers || 0);
-        setTotalVisiting(data.totalVisiting || 0);
-      }
-    } catch (err) {
-      console.error("Failed to refresh stats", err);
-    }
-
-    // Refresh pending requests
-    try {
-      const res = await fetch("/api/request-access", {
-        credentials: "include",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const filtered = (data.requests || []).filter(
-          (r) => r.status === "pending",
-        );
-        setPendingRequests(filtered);
-      }
-    } catch (err) {
-      console.error("Failed to refresh requests", err);
-    }
-  }
-
-  const pendingCount = pendingRequests.length;
 
   return (
     <div>
@@ -121,9 +55,9 @@ export default function CoordinatorDashboard() {
             color="purple"
           />
           <StatCard
-            label="Pending Approvals"
-            value={pendingCount}
-            sub="Access requests"
+            label="Visiting Lecturers"
+            value={totalVisiting}
+            sub="Visiting and adjunct"
             color="red"
           />
           <StatCard
@@ -138,21 +72,32 @@ export default function CoordinatorDashboard() {
         <div className="grid grid-cols-2 gap-6">
           <div className="bg-white rounded-xl border border-gray-100 p-5">
             <h2 className="text-sm font-semibold text-gray-700 mb-4">
-              Pending Approvals
+              Resources & Guidance
             </h2>
-            {loading ? (
-              <p className="text-sm text-gray-400">Loading...</p>
-            ) : (
-              <PendingApprovals
-                initial={pendingRequests}
-                onAddUser={handleAddUser}
-                onReject={handleReject}
-                onApproved={handleApproved}
-              />
-            )}
+            <p className="text-sm leading-6 text-gray-600">
+              Access the latest documentation and forms for course planning and
+              lecturer coordination.
+            </p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-xl border border-gray-200 p-4 bg-slate-50">
+                <p className="text-xs uppercase tracking-wide text-slate-500">
+                  Total Students
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-slate-900">
+                  {totalStudents}
+                </p>
+              </div>
+              <div className="rounded-xl border border-gray-200 p-4 bg-slate-50">
+                <p className="text-xs uppercase tracking-wide text-slate-500">
+                  Visiting Lecturers
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-slate-900">
+                  {totalVisiting}
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* Downloads panel */}
           <div className="bg-blue-100 rounded-xl border border-gray-100 p-5">
             <h2 className="text-sm font-semibold text-gray-700 mb-4">
               Downloads
@@ -199,18 +144,6 @@ export default function CoordinatorDashboard() {
           </div>
         </div>
       </div>
-
-      {/* Approval Modal */}
-      {showApprovalModal && selectedRequest && (
-        <ApprovalModal
-          request={selectedRequest}
-          onClose={() => {
-            setShowApprovalModal(false);
-            setSelectedRequest(null);
-          }}
-          onApproved={handleApproved}
-        />
-      )}
     </div>
   );
 }
