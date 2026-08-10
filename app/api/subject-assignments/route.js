@@ -1,4 +1,5 @@
 import connectDB from "@/lib/mongoose";
+import "@/lib/modelsRegistry";
 import SubjectAssignment from "@/models/SubjectAssignment";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
@@ -13,7 +14,6 @@ export async function GET(req) {
 
     await connectDB();
 
-
     const { searchParams } = new URL(req.url);
     const batchId = searchParams.get("batchId");
     const semesterNumber = searchParams.get("semesterNumber");
@@ -24,11 +24,12 @@ export async function GET(req) {
     if (semesterNumber) query.semesterNumber = Number(semesterNumber);
     if (lecturerId) query.lecturerId = lecturerId;
 
-
     const assignments = await SubjectAssignment.find(query)
       .populate("subjectId", "code name credits type")
       .populate("lecturerId", "name email role")
       .sort({ createdAt: 1 });
+
+    console.log(assignments);
 
     return NextResponse.json({ success: true, assignments });
   } catch (error) {
