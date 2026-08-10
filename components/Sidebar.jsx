@@ -21,7 +21,7 @@ const hodLinks = [
   { label: "Students", href: "/dashboard/hod/students", icon: "👨‍🎓" },
   { section: "Administration" },
   { label: "Payments", href: "/dashboard/hod/payments", icon: "💰" },
-  { label: "Settings", href: "/dashboard/hod/settings", icon: "⚙️" },
+  { label: "Settings", href: "/dashboard/settings", icon: "⚙️" },
 ];
 
 const coordinatorLinks = [
@@ -44,32 +44,36 @@ const coordinatorLinks = [
   { label: "Students", href: "/dashboard/coordinator/students", icon: "👨‍🎓" },
   { section: "Administration" },
   { label: "Payments", href: "/dashboard/coordinator/payments", icon: "💰" },
-  { label: "Settings", href: "/dashboard/coordinator/settings", icon: "⚙️" },
+  { label: "Settings", href: "/dashboard/settings", icon: "⚙️" },
 ];
 
 const lecturerLinks = [
   { label: "Dashboard", href: "/dashboard/lecturer", icon: "🏠" },
-  { label: "My Subjects", href: "/dashboard/lecturer/subjects", icon: "📚" },
+  { label: "Timetable", href: "/dashboard/lecturer/timetable", icon: "📅" },
+  { label: "Courses", href: "/dashboard/lecturer/subjects", icon: "📚" },
   { label: "Results Status", href: "/dashboard/lecturer/marks", icon: "📊" },
+  { label: "Exams", href: "/dashboard/lecturer/exams", icon: "📝" },
   {
     label: "Lecture Hours",
     href: "/dashboard/lecturer/lecture-hours",
     icon: "🕐",
   },
+  { label: "Settings", href: "/dashboard/settings", icon: "⚙️" },
 ];
 
 const studentLinks = [
   { label: "Dashboard", href: "/dashboard/student", icon: "🏠" },
-  { label: "My Marks", href: "/dashboard/student/marks", icon: "📝" },
-  { label: "Subjects", href: "/dashboard/student/subjects", icon: "📚" },
   { label: "Timetable", href: "/dashboard/student/timetable", icon: "📅" },
+  { label: "Courses", href: "/dashboard/student/courses", icon: "📚" },
+  { label: "Projects", href: "/dashboard/student/projects", icon: "🔬" },
   {
     label: "Lecture Hours",
     href: "/dashboard/student/lecture-hours",
     icon: "🕐",
   },
-  { label: "Projects", href: "/dashboard/student/projects", icon: "🔬" },
-  { label: "Transcript", href: "/dashboard/student/transcript", icon: "📄" },
+  { label: "Results Status", href: "/dashboard/student/marks", icon: "📊" },
+  { label: "Exam", href: "/dashboard/student/exam", icon: "📝" },
+  { label: "Settings", href: "/dashboard/settings", icon: "⚙️" },
 ];
 
 const linksByRole = {
@@ -154,7 +158,7 @@ export default function Sidebar() {
                 ${
                   isActive
                     ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium shadow-md shadow-blue-900/40"
-                    : "text-blue-200/80 hover:bg-white/[0.06] hover:text-white"
+                    : "text-blue-200/80 hover:bg-white/6 hover:text-white"
                 }`}
             >
               {isActive && (
